@@ -27,8 +27,6 @@ use Tests\TestCase;
 #[TestsCommand(NotifyHostInstructionCommand::class)]
 final class NotifyHostInstructionTest extends TestCase
 {
-    private const string VECTORS = 'programs/runner/hostapi/testdata/conformance.json';
-
     use RefreshHookDatabase;
     use WithActiveAccount;
 
@@ -109,7 +107,11 @@ final class NotifyHostInstructionTest extends TestCase
     public function test_an_image_fault_whose_facts_the_protocol_does_not_know_is_refused(): void
     {
         [$open] = $this->journal->hostInstructionsOf('shell');
-        $fault = json_decode((string) file_get_contents(base_path(self::VECTORS)), true)['answers'][2];
+        $faults = array_filter(
+            $this->journal->recordedHostAnswers('claude-code', 'probe-image-missing'),
+            fn (array $answer) => ($answer['refusal'] ?? null) === 'image_fault',
+        );
+        $fault = array_values($faults)[0];
         $fault['instruction_id'] = $open->id;
         $fault['facts']['fault'] = 'image_gone';
 

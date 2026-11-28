@@ -29,13 +29,17 @@ use App\Hosts\Enums\RestartPolicy;
 use App\Hosts\ProcessFeed;
 use App\Hosts\Protocol\HostInstructionType;
 use App\Hosts\Protocol\HostProcessType;
+use App\Hosts\Protocol\HostRoute;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostInstruction;
 use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionProcess;
 use App\Providers\DriversServiceProvider;
+use App\Recordings\Enums\Wire;
+use App\Recordings\RecordedCall;
 use App\Recordings\RecordingDrafts;
+use App\Recordings\Recordings;
 use App\Support\AgentImage;
 use App\Support\Compatibility\PinnedBuilds;
 use App\Values\ClaimedRequest;
@@ -499,6 +503,25 @@ trait ArrangesHostProcesses
         $this->app->instance(MockHost::class, $host);
 
         return $this;
+    }
+
+    /**
+     * Every answer the host sent the journal in a recorded scenario, as the host wrote it, in the order it sent them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function recordedHostAnswers(string $driver, string $scenario): array
+    {
+        $calls = $this->service(Recordings::class)->scenario($driver, $scenario)->calls(Wire::Host);
+        $answers = array_filter(
+            $calls,
+            fn (RecordedCall $call) => $call->status === null && HostRoute::AnswerInstruction->matchesPath($call->path),
+        );
+
+        return array_values(array_map(
+            fn (RecordedCall $call) => (array) json_decode($call->body, true, flags: JSON_THROW_ON_ERROR),
+            $answers,
+        ));
     }
 
     /**

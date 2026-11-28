@@ -24,7 +24,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -47,7 +47,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Content-Type": "application/json"
@@ -69,7 +69,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -92,7 +92,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Content-Type": "application/json"
@@ -114,7 +114,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -137,7 +137,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Content-Type": "application/json"
@@ -159,7 +159,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -182,7 +182,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Content-Type": "application/json"
@@ -204,7 +204,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -227,7 +227,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Content-Type": "application/json"
@@ -249,7 +249,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -272,7 +272,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Content-Type": "application/json"
@@ -294,7 +294,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -317,7 +317,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Content-Type": "application/json"
@@ -339,7 +339,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -362,7 +362,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Content-Type": "application/json"
@@ -384,7 +384,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -407,7 +407,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Content-Type": "application/json"
@@ -429,7 +429,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -452,7 +452,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Content-Type": "application/json"
@@ -474,7 +474,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -497,7 +497,7 @@
             "call": {
                 "method": "POST",
                 "path": "/hooks/codex",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Content-Type": "application/json"

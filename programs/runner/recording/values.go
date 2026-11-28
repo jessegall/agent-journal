@@ -150,9 +150,18 @@ func fakesOf(recorded string) ([]string, *regexp.Regexp) {
 			all = append(all, found{at[0], at[1], shape.shape})
 		}
 	}
-	sort.Slice(all, func(left, right int) bool { return all[left].start < all[right].start })
+	// The earliest fake wins, the longest of those starting together; a fake inside one already taken is part of it.
+	sort.Slice(all, func(left, right int) bool {
+		if all[left].start != all[right].start {
+			return all[left].start < all[right].start
+		}
+		return all[left].end > all[right].end
+	})
 	fakes, pattern, from := []string{}, "^", 0
 	for _, fake := range all {
+		if fake.start < from {
+			continue
+		}
 		fakes = append(fakes, recorded[fake.start:fake.end])
 		pattern += regexp.QuoteMeta(recorded[from:fake.start]) + "(" + fake.shape.String() + ")"
 		from = fake.end

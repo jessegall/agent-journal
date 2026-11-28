@@ -24,9 +24,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000003/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -44,7 +44,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000003/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -70,9 +70,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000003/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -90,7 +90,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000003/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -116,9 +116,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000004/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -136,7 +136,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000004/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -162,9 +162,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000005/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -182,7 +182,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000005/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",

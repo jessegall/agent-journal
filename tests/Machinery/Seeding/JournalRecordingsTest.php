@@ -45,6 +45,16 @@ final class JournalRecordingsTest extends TestCase
         $this->journal->mockHost(fn (MockHost $host) => $this->assertNotSame([], $host->recordedInputs()));
     }
 
+    public function test_the_hosts_recorded_answers_read_as_it_wrote_them(): void
+    {
+        $answers = $this->journal->recordedHostAnswers('claude-code', 'probe-image-missing');
+
+        $this->journal->assertResult(
+            [true, true],
+            [$answers !== [], in_array('image_fault', array_column($answers, 'refusal'), true)],
+        );
+    }
+
     public function test_one_wrong_byte_fails_naming_its_checkpoint(): void
     {
         $this->journal->playRecording(self::RECORDING);

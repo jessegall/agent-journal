@@ -22,7 +22,7 @@ func recordedClaim(t *testing.T) (recording.Call, []byte) {
 		t.Fatal(err)
 	}
 	for _, call := range calls {
-		if call.Answered.Path == "/host/orders/claim" {
+		if call.Answered.Path == "/host/instructions/claim" {
 			body, _ := base64.StdEncoding.DecodeString(call.Answered.Body)
 			return call.Answered, body
 		}
@@ -34,14 +34,14 @@ func recordedClaim(t *testing.T) (recording.Call, []byte) {
 func TestAFakeIDIsBoundToTheFirstLiveIDAndReplacedThereafter(t *testing.T) {
 	_, body := recordedClaim(t)
 	var claim struct {
-		Orders []struct {
+		Instructions []struct {
 			ID string `json:"id"`
-		} `json:"orders"`
+		} `json:"instructions"`
 	}
-	if err := json.Unmarshal(body, &claim); err != nil || len(claim.Orders) == 0 {
+	if err := json.Unmarshal(body, &claim); err != nil || len(claim.Instructions) == 0 {
 		t.Fatalf("the recorded claim holds %s", body)
 	}
-	fake := claim.Orders[0].ID
+	fake := claim.Instructions[0].ID
 	heard := strings.Replace(string(body), fake, liveOrderID, 1)
 	values := recording.NewValues()
 

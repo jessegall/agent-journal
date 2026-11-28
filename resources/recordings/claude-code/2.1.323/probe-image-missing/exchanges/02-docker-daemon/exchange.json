@@ -24,9 +24,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -44,7 +44,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -122,9 +122,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000012/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -142,7 +142,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000012/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -167,9 +167,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000012/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -187,7 +187,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000012/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -219,7 +219,7 @@
                     "stdout": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -241,7 +241,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -317,9 +317,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000012/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -337,7 +337,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000012/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -369,7 +369,7 @@
                     "tail": "20"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -421,7 +421,7 @@
                     "t": "10"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -470,7 +470,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -515,9 +515,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -535,7 +535,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -561,9 +561,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -581,7 +581,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -607,7 +607,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -629,7 +629,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 404,
                 "headers": {
                     "Api-Version": "1.51",
@@ -659,7 +659,7 @@
                     "t": "10"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -705,9 +705,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -725,9 +725,9 @@
             "call": {
                 "method": "DELETE",
                 "path": "/v1.51/networks/local-00000000000000000000000020",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -745,7 +745,7 @@
             "call": {
                 "method": "DELETE",
                 "path": "/v1.51/networks/local-00000000000000000000000020",
-                "query": [],
+                "query": {},
                 "status": 404,
                 "headers": {
                     "Api-Version": "1.51",
@@ -771,7 +771,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -797,7 +797,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -819,7 +819,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 404,
                 "headers": {
                     "Api-Version": "1.51",

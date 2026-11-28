@@ -26,8 +26,6 @@ final class RecordDriverImageAnswerTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    private const string VECTORS = 'programs/runner/hostapi/testdata/conformance.json';
-
     private HostDriverImage $image;
 
     protected function setUp(): void
@@ -102,15 +100,18 @@ final class RecordDriverImageAnswerTest extends TestCase
     }
 
     /**
-     * The built reply of the committed conformance vectors, the bytes the runner writes for a build.
+     * The built reply the runner sent for a build in the recorded Codex terminal turn.
      *
      * @return array<string, mixed>
      */
     private function builtReply(): array
     {
-        $vectors = json_decode((string) file_get_contents(base_path(self::VECTORS)), true, flags: JSON_THROW_ON_ERROR);
+        $built = array_filter(
+            $this->journal->recordedHostAnswers('codex', 'terminal-turn'),
+            fn (array $answer) => array_key_exists('history', (array) ($answer['facts'] ?? [])),
+        );
 
-        return $vectors['answers'][3]['facts'];
+        return array_values($built)[0]['facts'];
     }
 
     /**

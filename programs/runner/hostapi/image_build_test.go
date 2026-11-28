@@ -13,11 +13,10 @@ import (
 	"journal-runner/host"
 )
 
-// buildInstruction is the committed build_image of the conformance vectors, signed as the journal signs it.
+// buildInstruction is the build_image the journal handed out in the recorded Codex terminal turn, signed for the test.
 func buildInstruction(t *testing.T) Instruction {
 	t.Helper()
-	vectors, _ := loadConformance(t)
-	instruction := vectors.Instructions[1].Instruction
+	instruction := recordedInstructions(t, "build_image")[0]
 	instruction.ExpiresAt = testNow.Add(5 * time.Second)
 	instruction.Signature = Sign(testSecret, instruction)
 	return instruction
@@ -82,8 +81,11 @@ func TestABuildWhoseBaseTheDaemonLacksIsAnImageFaultAboutItsBase(t *testing.T) {
 		t.Fatal(err)
 	}
 	instruction := buildInstruction(t)
-	instruction.Payload = strings.Replace(instruction.Payload, "journal-candidate@sha256:"+strings.Repeat("a", 64),
-		dockermock.RecordedMissingBase, 1)
+	plan, err := DecodePayload[host.ImageBuild](instruction)
+	if err != nil {
+		t.Fatal(err)
+	}
+	instruction.Payload = strings.Replace(instruction.Payload, `"base":"`+plan.Base+`"`, `"base":"`+dockermock.RecordedMissingBase+`"`, 1)
 	instruction.Signature = Sign(testSecret, instruction)
 
 	answer := answerOf(t, host.Containers{Daemon: played}, instruction)

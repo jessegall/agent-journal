@@ -24,9 +24,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -44,7 +44,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -70,7 +70,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -92,7 +92,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -174,9 +174,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000010/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -194,7 +194,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000010/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -223,7 +223,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -274,7 +274,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,

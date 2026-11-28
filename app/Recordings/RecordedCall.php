@@ -140,9 +140,10 @@ final readonly class RecordedCall implements JsonSerializable
         return [
             'method' => $this->method,
             'path' => $this->path,
-            'query' => $this->query,
+            // Objects even when empty, so a reader with a map type reads no query or headers rather than a list.
+            'query' => (object) $this->query,
             'status' => $this->status,
-            'headers' => $this->headers,
+            'headers' => (object) $this->headers,
             'body' => base64_encode($this->body),
             'upgraded' => $this->isUpgraded,
             'cut' => $this->isCut,

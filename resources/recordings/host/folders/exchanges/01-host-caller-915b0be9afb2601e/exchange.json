@@ -24,7 +24,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000001/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -47,7 +47,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000004/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -70,7 +70,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000005/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -93,7 +93,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000008/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -116,7 +116,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000009/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -139,7 +139,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000010/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -162,7 +162,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000011/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -185,7 +185,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000012/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -208,7 +208,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000013/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -231,7 +231,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000014/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -254,7 +254,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000015/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -277,7 +277,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000016/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -300,9 +300,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000001/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -320,9 +320,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000010/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -340,9 +340,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000004/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -360,9 +360,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000012/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -380,9 +380,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000014/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -400,9 +400,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000019/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -420,9 +420,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000005/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -440,9 +440,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000008/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -460,9 +460,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000013/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -480,9 +480,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000009/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -500,9 +500,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000011/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -520,9 +520,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000015/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -540,9 +540,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000016/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -560,7 +560,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000020/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -583,9 +583,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000020/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -680,7 +680,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/instructions/00000000000000000000000022",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -703,9 +703,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/instructions/00000000000000000000000022",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -774,7 +774,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000012/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -797,7 +797,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000019/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -820,7 +820,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000010/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -843,7 +843,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000014/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -866,7 +866,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000013/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -889,7 +889,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000008/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -912,7 +912,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000011/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -935,7 +935,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000001/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -958,7 +958,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000009/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -981,7 +981,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000005/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1004,9 +1004,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000014/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1024,7 +1024,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000004/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1047,7 +1047,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000015/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1070,7 +1070,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000020/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1093,7 +1093,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000016/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1116,9 +1116,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000012/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1136,9 +1136,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000010/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1156,9 +1156,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000011/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1176,9 +1176,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000013/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1196,9 +1196,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000008/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1216,9 +1216,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000001/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1236,9 +1236,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000019/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1256,9 +1256,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000009/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1276,9 +1276,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000015/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1296,9 +1296,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000004/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1316,9 +1316,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000005/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1336,9 +1336,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000020/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1356,9 +1356,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000016/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1376,7 +1376,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/instructions/00000000000000000000000023",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1399,7 +1399,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/instructions/00000000000000000000000021",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1422,9 +1422,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/instructions/00000000000000000000000023",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1442,9 +1442,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/instructions/00000000000000000000000021",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1462,7 +1462,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000011/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1485,7 +1485,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000008/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1508,7 +1508,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000014/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1531,7 +1531,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000013/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1554,7 +1554,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000010/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1577,7 +1577,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000012/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1600,7 +1600,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000009/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1623,7 +1623,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000020/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1646,7 +1646,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000019/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1669,7 +1669,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000015/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1692,7 +1692,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000004/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1715,7 +1715,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000005/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1738,7 +1738,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000001/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1761,9 +1761,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000011/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1781,9 +1781,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000008/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1801,9 +1801,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000010/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1821,7 +1821,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000016/output",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1844,9 +1844,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000013/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1864,7 +1864,7 @@
             "call": {
                 "method": "POST",
                 "path": "/host/heartbeat",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json",
@@ -1887,9 +1887,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000009/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1907,9 +1907,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000014/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1927,9 +1927,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000012/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1947,9 +1947,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000019/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1967,9 +1967,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000005/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1987,9 +1987,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000004/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2007,9 +2007,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000001/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2027,9 +2027,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000016/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2047,9 +2047,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000020/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2067,9 +2067,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/heartbeat",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2087,9 +2087,9 @@
             "call": {
                 "method": "POST",
                 "path": "/host/processes/00000000000000000000000015/output",
-                "query": [],
+                "query": {},
                 "status": 204,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,

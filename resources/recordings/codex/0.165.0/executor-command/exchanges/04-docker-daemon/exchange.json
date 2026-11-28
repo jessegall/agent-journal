@@ -56,9 +56,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000008/history",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -76,7 +76,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000008/history",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -102,9 +102,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000005/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -122,7 +122,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000005/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -148,9 +148,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000010/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -168,7 +168,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000010/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -194,9 +194,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000011/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -214,7 +214,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000011/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -240,9 +240,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000008/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -260,7 +260,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000008/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -286,9 +286,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -306,7 +306,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -332,7 +332,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -354,7 +354,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -436,9 +436,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000126/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -456,7 +456,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000126/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -485,7 +485,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -536,7 +536,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -582,9 +582,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -602,7 +602,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -628,7 +628,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -650,7 +650,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -732,9 +732,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000127/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -752,7 +752,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000127/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -781,7 +781,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -832,7 +832,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -878,9 +878,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -898,7 +898,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -976,9 +976,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000016/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -996,7 +996,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000016/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -1021,9 +1021,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000016/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1041,7 +1041,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000016/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -1073,7 +1073,7 @@
                     "stdout": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1095,7 +1095,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1141,9 +1141,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000016/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1161,7 +1161,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000016/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -1193,7 +1193,7 @@
                     "tail": "20"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1275,7 +1275,7 @@
                     "t": "10"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1324,7 +1324,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1369,9 +1369,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1389,7 +1389,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -1415,9 +1415,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1435,7 +1435,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -1461,7 +1461,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -1483,7 +1483,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -1565,9 +1565,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000130/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1585,7 +1585,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000130/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -1614,7 +1614,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1665,7 +1665,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1711,9 +1711,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1731,7 +1731,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -1757,7 +1757,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -1779,7 +1779,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -1861,9 +1861,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000131/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1881,7 +1881,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000131/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -1910,7 +1910,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -1961,7 +1961,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2007,9 +2007,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2027,7 +2027,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -2053,7 +2053,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -2075,7 +2075,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -2157,9 +2157,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000132/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2177,7 +2177,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000132/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -2206,7 +2206,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2257,7 +2257,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2303,9 +2303,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2323,7 +2323,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -2349,7 +2349,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -2371,7 +2371,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -2455,9 +2455,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000133/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2475,7 +2475,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000133/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -2504,7 +2504,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2555,7 +2555,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2601,9 +2601,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/networks/local-00000000000000000000000002",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2621,7 +2621,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/networks/local-00000000000000000000000002",
-                "query": [],
+                "query": {},
                 "status": 404,
                 "headers": {
                     "Api-Version": "1.51",
@@ -2647,7 +2647,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/networks/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -2669,7 +2669,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/networks/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -2695,9 +2695,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/volumes/local-history-00000000000000000000000002",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2715,7 +2715,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/volumes/local-history-00000000000000000000000002",
-                "query": [],
+                "query": {},
                 "status": 404,
                 "headers": {
                     "Api-Version": "1.51",
@@ -2741,7 +2741,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/volumes/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -2763,7 +2763,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/volumes/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -2841,9 +2841,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000022/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2861,7 +2861,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000022/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -2886,9 +2886,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000022/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2906,7 +2906,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000022/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -2938,7 +2938,7 @@
                     "stdout": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -2960,7 +2960,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3036,9 +3036,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000022/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3056,7 +3056,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000022/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -3088,7 +3088,7 @@
                     "tail": "20"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3140,7 +3140,7 @@
                     "t": "10"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3189,7 +3189,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3234,9 +3234,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3254,7 +3254,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -3280,9 +3280,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3300,7 +3300,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -3326,7 +3326,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -3348,7 +3348,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -3430,9 +3430,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000138/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3450,7 +3450,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000138/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -3479,7 +3479,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3530,7 +3530,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3576,9 +3576,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3596,7 +3596,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -3622,7 +3622,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -3644,7 +3644,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -3726,9 +3726,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000139/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3746,7 +3746,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000139/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -3775,7 +3775,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3826,7 +3826,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3872,9 +3872,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -3892,7 +3892,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -3918,7 +3918,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -3940,7 +3940,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -4022,9 +4022,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000140/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4042,7 +4042,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000140/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -4071,7 +4071,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4122,7 +4122,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4168,9 +4168,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4188,7 +4188,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -4214,7 +4214,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -4236,7 +4236,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -4320,9 +4320,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000141/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4340,7 +4340,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000141/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -4369,7 +4369,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4420,7 +4420,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4466,9 +4466,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/networks/local-00000000000000000000000002",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4486,7 +4486,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/networks/local-00000000000000000000000002",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -4512,9 +4512,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/volumes/local-history-00000000000000000000000002",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4532,7 +4532,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/volumes/local-history-00000000000000000000000002",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -4610,9 +4610,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000030/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4630,7 +4630,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000030/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -4655,9 +4655,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000030/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4675,7 +4675,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000030/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -4764,7 +4764,7 @@
                     "w": "120"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4814,7 +4814,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4864,9 +4864,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000045/history",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4884,7 +4884,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000045/history",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -4910,9 +4910,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000005/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4930,7 +4930,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000005/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -4956,9 +4956,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000010/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -4976,7 +4976,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000010/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -5002,9 +5002,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000011/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5022,7 +5022,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000011/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -5048,9 +5048,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000045/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5068,7 +5068,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000045/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -5094,9 +5094,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000008/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5114,7 +5114,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/images/sha256:0000000000000000000000000000000000000000000000000000000000000008/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -5140,9 +5140,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5160,7 +5160,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -5186,7 +5186,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -5208,7 +5208,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -5290,9 +5290,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000150/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5310,7 +5310,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000150/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -5339,7 +5339,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5390,7 +5390,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5440,7 +5440,7 @@
                     "t": "5"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5486,9 +5486,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000030/json",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5533,7 +5533,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/containers/journal-process-00000000000000000000000030/json",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -5565,7 +5565,7 @@
                     "tail": "20"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5617,7 +5617,7 @@
                     "t": "10"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5666,7 +5666,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5684,9 +5684,9 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5704,9 +5704,9 @@
             "call": {
                 "method": "DELETE",
                 "path": "/v1.51/networks/local-00000000000000000000000002",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5724,7 +5724,7 @@
             "call": {
                 "method": "GET",
                 "path": "/v1.51/info",
-                "query": [],
+                "query": {},
                 "status": 200,
                 "headers": {
                     "Api-Version": "1.51",
@@ -5750,7 +5750,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": null,
                 "headers": {
                     "Content-Type": "application/json"
@@ -5799,7 +5799,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/create",
-                "query": [],
+                "query": {},
                 "status": 201,
                 "headers": {
                     "Api-Version": "1.51",
@@ -5881,9 +5881,9 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000151/start",
-                "query": [],
+                "query": {},
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -5901,7 +5901,7 @@
             "call": {
                 "method": "DELETE",
                 "path": "/v1.51/networks/local-00000000000000000000000002",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -5926,7 +5926,7 @@
             "call": {
                 "method": "POST",
                 "path": "/v1.51/containers/0000000000000000000000000000000000000000000000000000000000000151/start",
-                "query": [],
+                "query": {},
                 "status": 204,
                 "headers": {
                     "Api-Version": "1.51",
@@ -5955,7 +5955,7 @@
                     "condition": "not-running"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,
@@ -6006,7 +6006,7 @@
                     "v": "1"
                 },
                 "status": null,
-                "headers": [],
+                "headers": {},
                 "body": "",
                 "upgraded": false,
                 "cut": false,

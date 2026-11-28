@@ -1,6 +1,7 @@
 package hostapi
 
 import (
+	"fmt"
 	"context"
 	"strings"
 	"testing"
@@ -75,19 +76,19 @@ func TestTheHostRefusesTheRemovedRecordInstructionsAsUnknown(t *testing.T) {
 	}
 }
 
-// A build_image payload, from the committed conformance vector, is read strictly: an unknown, a missing and a mistyped
+// A build_image payload, as the journal handed it out in the recorded Codex terminal turn, is read strictly: an unknown, a missing and a mistyped
 // field of it, a build argument's too, are each refused as unsafe by name.
 func TestAnImageBuildIsReadStrictly(t *testing.T) {
-	vectors, _ := loadConformance(t)
-	payload := vectors.Instructions[1].Instruction.Payload
+	payload := recordedInstructions(t, "build_image")[0].Payload
 	build, err := DecodePayload[host.ImageBuild](Instruction{Type: "build_image", Payload: payload})
-	if err != nil || build.Dockerfile != "Dockerfile" || string(build.Context) != "hi" || build.BuildArguments[0].Value != "0.165.0" {
-		t.Fatalf("the committed build was read as %+v, %v", build, err)
+	if err != nil || build.Dockerfile != "Dockerfile" || len(build.Context) == 0 || build.BuildArguments[0].Value != "0.165.0" {
+		t.Fatalf("the recorded build was read as %+v, %v", build, err)
 	}
+	deadline := fmt.Sprintf(`"deadline_ms":%d`, build.DeadlineMs)
 	cases := map[string]string{
 		strings.Replace(payload, `"dockerfile"`, `"dockerfiles"`, 1):                `the payload of build_image holds the field "dockerfiles", which the protocol does not know`,
 		strings.Replace(payload, `,"output_limit":65536`, ``, 1):                    `the payload of build_image misses its field output_limit`,
-		strings.Replace(payload, `"deadline_ms":600000`, `"deadline_ms":"soon"`, 1): `the payload of build_image holds deadline_ms as string, not int`,
+		strings.Replace(payload, deadline, `"deadline_ms":"soon"`, 1):                `the payload of build_image holds deadline_ms as string, not int`,
 		strings.Replace(payload, `{"name":"VERSION",`, `{`, 1):                      `the payload of build_image misses its field build_arguments.0.name`,
 	}
 	for changed, reason := range cases {
