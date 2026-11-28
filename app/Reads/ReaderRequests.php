@@ -15,7 +15,6 @@ use App\Support\ReflectedMethod;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Redirector;
 use Illuminate\Routing\Route;
 
 /**
@@ -27,7 +26,7 @@ final readonly class ReaderRequests implements ReaderRequestsContract
 {
     public function __construct(
         private Container $container,
-        private Redirector $redirector,
+        private PageFormRequests $requests,
         private ReflectorFactory $reflectors,
     ) {}
 
@@ -82,15 +81,14 @@ final readonly class ReaderRequests implements ReaderRequestsContract
             return $this->container->make($resolver->resolver);
         }
 
-        $request = $resolver->request::createFrom($current, new $resolver->request());
-        $request->query->replace($query);
+        $visit = Request::createFrom($current);
+        $visit->query->replace($query);
 
         if ($route !== null) {
-            $request->setRouteResolver(fn () => $route);
+            $visit->setRouteResolver(fn () => $route);
         }
 
-        $request->setContainer($this->container)->setRedirector($this->redirector);
-        $request->validateResolved();
+        $request = $this->requests->from($resolver->request, $visit);
 
         return $this->container->makeWith(
             $resolver->resolver,

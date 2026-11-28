@@ -29,6 +29,7 @@ use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use App\Support\Rules\CoreRules;
 use App\Web\Creation\PageFactory;
+use App\Web\Creation\SurfaceAttributeMap;
 use App\Web\Creation\WindowFactory;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
@@ -50,6 +51,7 @@ class DomainServiceProvider extends ServiceProvider
 
         $this->app->instance(DomainRegistry::class, $registry);
         $this->app->singleton(PageFactory::class);
+        $this->app->singleton(SurfaceAttributeMap::class);
         $this->app->singleton(WindowFactory::class);
         $this->app->booting(fn () => $this->registerDomainProviders($registry));
         $this->keepMigrationsOfUnbootedDomains($registry);

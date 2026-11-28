@@ -22,6 +22,9 @@ use App\Profiles\Enums\SlotContextType;
 use App\Settings\Enums\ActionMethod;
 use App\Text\Declarations\Section;
 use App\Text\Exceptions\InvalidSectionDeclaration;
+use App\Web\Attributes\Deferred;
+use App\Web\Creation\Exceptions\InvalidSurfacePolicy;
+use App\Web\Creation\SurfacePropPolicy;
 use App\Web\Declarations\Slot;
 use App\Web\Enums\PageDestination;
 use App\Web\Enums\PageSkeleton;
@@ -39,6 +42,13 @@ use ValueError;
  */
 final class ClientDeclarationValuesTest extends TestCase
 {
+    public function test_a_prop_cannot_be_deferred_and_optional(): void
+    {
+        $this->expectExceptionObject(InvalidSurfacePolicy::at('Books', 'A prop cannot be both optional and deferred.'));
+
+        new SurfacePropPolicy('Books', new Deferred('books'), true, null);
+    }
+
     public function test_a_pages_scoped_parts_are_the_parts_their_values_declare_in_the_order_added(): void
     {
         $page = Page::make('plan', 'Plan', Icon::Plan, RecentNotesResolver::class, 'PlanResolver.vue')
