@@ -22,7 +22,7 @@ use App\Events\Sharing\ShareScopeChanged;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneRoot;
-use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Models\Support\ProjectOrGlobalMembership;
 use App\Models\Support\JournalModel;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\Numbered;
@@ -85,7 +85,7 @@ use PhpOption\Option;
 final class Share extends JournalModel implements EventSource, Numbered, ProjectOwned, ReadableModel
 {
     use BelongsToOneRoot;
-    use BelongsToProjectOrGlobal;
+    use ProjectOrGlobalMembership;
     use BoundedReads;
     use FindsForUpdate;
     use HasNumber;

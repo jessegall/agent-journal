@@ -49,8 +49,8 @@ final class AccountsGetTest extends GuardedRouteEntryTestCase
         $contexts = $this->app->make(SurfaceContexts::class);
         $withAdd = $contexts->forVisit(Request::create('/accounts?add=1'));
         $withoutAdd = $contexts->forVisit(Request::create('/accounts?add=0'));
-        $this->assertTrue(AccountsInput::factory()->alwaysValidate()->from(new SurfacePayload($withAdd, []))->add);
-        $this->assertFalse(AccountsInput::factory()->alwaysValidate()->from(new SurfacePayload($withoutAdd, []))->add);
+        $this->assertTrue(AccountsInput::factory()->alwaysValidate()->from(new SurfacePayload($withAdd, []))->isAdding);
+        $this->assertFalse(AccountsInput::factory()->alwaysValidate()->from(new SurfacePayload($withoutAdd, []))->isAdding);
 
         $invalid = $contexts->forVisit(Request::create('/accounts?add=false'));
         $this->expectException(ValidationException::class);

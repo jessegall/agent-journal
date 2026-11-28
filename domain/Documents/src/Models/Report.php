@@ -12,7 +12,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Models\Support\Accessor;
-use App\Models\Support\BelongsToProject;
+use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
 use App\Projects\Contracts\ProjectOwned;
 use App\Reads\Contracts\TextContent;
@@ -75,7 +75,7 @@ final class Report extends JournalModel implements
     Shareable,
     TextContent
 {
-    use BelongsToProject;
+    use ProjectMembership;
     use BoundedReads;
     use CreatedWithAttention;
     use HasNumber;

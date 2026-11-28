@@ -11,7 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Links\LinkRemoved;
 use App\Exceptions\CrossProjectEdge;
-use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Models\Support\ProjectOrGlobalMembership;
 use App\Models\Support\HasUlidKey;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Concerns\CountsPivotLoads;
@@ -43,7 +43,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 #[Table('links')]
 final class Link extends MorphPivot implements EventSource, ProjectOwned, ReadableModel
 {
-    use BelongsToProjectOrGlobal;
+    use ProjectOrGlobalMembership;
     use BoundedReads;
     use CountsPivotLoads;
     use HasUlidKey;

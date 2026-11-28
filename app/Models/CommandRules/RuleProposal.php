@@ -19,7 +19,7 @@ use App\Events\Processes\RuleProposalApproved;
 use App\Events\Processes\RuleProposalRejected;
 use App\Events\Processes\RuleProposalWithdrawn;
 use App\Models\Projects\Project;
-use App\Models\Support\BelongsToProject;
+use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
@@ -61,7 +61,7 @@ use Spatie\LaravelData\DataCollection;
  */
 final class RuleProposal extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
-    use BelongsToProject;
+    use ProjectMembership;
     use BoundedReads;
     use Linkable;
     use RaisesEvents;

@@ -12,7 +12,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Models\Support\Accessor;
-use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Models\Support\ProjectOrGlobalMembership;
 use App\Models\Support\JournalModel;
 use App\Projects\Contracts\ProjectOwned;
 use App\Reads\Contracts\TextContent;
@@ -77,7 +77,7 @@ final class Document extends JournalModel implements
     Shareable,
     TextContent
 {
-    use BelongsToProjectOrGlobal;
+    use ProjectOrGlobalMembership;
     use BoundedReads;
     use CreatedWithAttention;
     use HasNumber;

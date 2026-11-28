@@ -13,11 +13,11 @@ use Illuminate\Database\Eloquent\Builder;
 /**
  * For a model whose every row belongs to one project: a query sees only the rows of the current project selection.
  */
-trait BelongsToProject
+trait ProjectMembership
 {
     use HasProjectColumn;
 
-    public static function bootBelongsToProject(): void
+    public static function bootProjectMembership(): void
     {
         static::addGlobalScope(new ProjectScope(
             static fn (): ProjectSelection => Container::getInstance()->make(CurrentProject::class)->selection(),

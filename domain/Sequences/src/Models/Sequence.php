@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Models\Support\ProjectOrGlobalMembership;
 use App\Models\Support\JournalModel;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
@@ -41,7 +41,7 @@ use Spatie\LaravelData\DataCollection;
  */
 final class Sequence extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
-    use BelongsToProjectOrGlobal;
+    use ProjectOrGlobalMembership;
     use BoundedReads;
     use Linkable;
     use RaisesEvents;

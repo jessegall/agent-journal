@@ -332,7 +332,7 @@ final readonly class ScenarioPlayer
             }
 
             if ($keys->status === HostInstructionStatus::Done
-                && ($source === null || $this->drafts->sawSessionStart($source, $sentAfter))) {
+                && ($source === null || $this->drafts->hasSessionStart($source, $sentAfter))) {
                 return;
             }
 

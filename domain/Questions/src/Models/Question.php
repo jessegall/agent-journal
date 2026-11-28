@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Models\Support\Accessor;
-use App\Models\Support\BelongsToProject;
+use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\AuthoredModel;
@@ -51,7 +51,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  */
 final class Question extends JournalModel implements AuthoredModel, EventSource, ProjectOwned, ReadableModel
 {
-    use BelongsToProject;
+    use ProjectMembership;
     use BoundedReads;
     use Linkable;
     use RaisesEvents;

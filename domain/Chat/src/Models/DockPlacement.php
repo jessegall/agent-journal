@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Models\Inboxes\Inbox;
 use App\Models\Support\Accessor;
-use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Models\Support\ProjectOrGlobalMembership;
 use App\Models\Support\JournalModel;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
@@ -42,7 +42,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  */
 final class DockPlacement extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
-    use BelongsToProjectOrGlobal;
+    use ProjectOrGlobalMembership;
     use BoundedReads;
     use Linkable;
     use RaisesEvents;

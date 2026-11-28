@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\CommandRequest;
-use App\Models\Support\BelongsToProject;
+use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
@@ -40,7 +40,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 final class ReaderRevision extends JournalModel implements ProjectOwned, ReadableModel
 {
-    use BelongsToProject;
+    use ProjectMembership;
     use BoundedReads;
     use Linkable;
 

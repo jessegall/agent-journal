@@ -50,7 +50,7 @@ final class DeclaredLayoutTest extends TestCase
         LayoutPartData::build()->asText()->value('Title')->finish();
     }
 
-    public function test_nullable_part_fields_preserve_explicit_null_and_the_variant_defaults(): void
+    public function test_nullable_part_fields_preserve_explicit_null_and_the_shape_defaults(): void
     {
         $notice = LayoutPartData::build()->asNotice()->key('empty')->style('info')->title('Empty')->detail(null)->finish();
 

@@ -261,7 +261,7 @@ final class SessionLifeTest extends TestCase
             ->driveUntil($this->composerShownOn('terminal')));
         $this->typeTaken(
             $first->keys,
-            fn (Assert $journal) => $first->answeredIn($journal->value('hostProcesses.terminal.rows')),
+            fn (Assert $journal) => $first->isAnsweredIn($journal->value('hostProcesses.terminal.rows')),
         );
         $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
             ->driveUntil($answered)

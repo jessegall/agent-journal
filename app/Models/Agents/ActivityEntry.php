@@ -8,7 +8,7 @@ use App\Agents\Enums\ActivityLevel;
 use App\Agents\Enums\ActivityType;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Models\Support\BelongsToProject;
+use App\Models\Support\ProjectMembership;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\JournalModel;
 use App\Projects\Contracts\ProjectOwned;
@@ -41,7 +41,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Table('activity_entries')]
 final class ActivityEntry extends JournalModel implements ProjectOwned, ReadableModel
 {
-    use BelongsToProject;
+    use ProjectMembership;
     use BoundedReads;
     use HasActorColumns;
     use Linkable;

@@ -9,7 +9,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
 use App\Models\Runs\ProcessRun;
-use App\Models\Support\BelongsToProject;
+use App\Models\Support\ProjectMembership;
 use App\Models\Support\JournalModel;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
@@ -35,7 +35,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class EvidenceRead extends JournalModel implements ProjectOwned, ReadableModel
 {
-    use BelongsToProject;
+    use ProjectMembership;
     use BoundedReads;
     use InsertsRowSets;
     use Linkable;

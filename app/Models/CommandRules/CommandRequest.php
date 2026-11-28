@@ -19,7 +19,7 @@ use App\Models\Projects\Project;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Models\Support\Accessor;
-use App\Models\Support\BelongsToProject;
+use App\Models\Support\ProjectMembership;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\JournalModel;
 use App\Processes\Enums\OutputStream;
@@ -52,7 +52,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  */
 final class CommandRequest extends JournalModel implements ProjectOwned, ReadableModel
 {
-    use BelongsToProject;
+    use ProjectMembership;
     use BoundedReads;
     use HasActorColumns;
     use HasActorColumns;

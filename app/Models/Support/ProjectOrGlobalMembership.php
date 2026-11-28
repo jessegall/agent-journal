@@ -7,9 +7,9 @@ namespace App\Models\Support;
 /**
  * For a model whose rows belong to one project or to Global: a query sees the selection's rows and the Global ones.
  */
-trait BelongsToProjectOrGlobal
+trait ProjectOrGlobalMembership
 {
-    use BelongsToProject;
+    use ProjectMembership;
 
     protected static function showsGlobalRows(): bool
     {

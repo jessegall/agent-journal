@@ -8,8 +8,8 @@ use App\Models\Agents\Agent;
 use App\Models\Projects\ConnectionAudit;
 use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\ProjectInvitation;
-use App\Models\Support\BelongsToProject;
-use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Models\Support\ProjectMembership;
+use App\Models\Support\ProjectOrGlobalMembership;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 use Tests\Architecture\Support\DomainFiles;
@@ -26,8 +26,8 @@ final class ProjectOwnedModelsTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    private const string TRAIT_ADVICE = 'Give each of these models BelongsToProject, or BelongsToProjectOrGlobal for a '
-        .'record that may be Global, so its reads follow the project selection.';
+    private const string TRAIT_ADVICE = 'Use ProjectMembership for each model, or ProjectOrGlobalMembership when '
+        .'its records can be Global, so reads follow the project selection.';
 
     private const string LIFT_ADVICE = 'Lift the project scope only through acrossProjects() or inProject().';
 
@@ -55,7 +55,7 @@ final class ProjectOwnedModelsTest extends TestCase
     /**
      * The files the scope is lifted in by name.
      */
-    private const array SCOPE_LIFTERS = ['app/Models/Support/BelongsToProject.php'];
+    private const array SCOPE_LIFTERS = ['app/Models/Support/ProjectMembership.php'];
 
     public function test_every_model_whose_table_names_a_project_reads_through_the_project_scope(): void
     {
@@ -70,8 +70,8 @@ final class ProjectOwnedModelsTest extends TestCase
 
             $traits = class_uses_recursive($model);
 
-            if (! in_array(BelongsToProject::class, $traits, true)
-                && ! in_array(BelongsToProjectOrGlobal::class, $traits, true)) {
+            if (! in_array(ProjectMembership::class, $traits, true)
+                && ! in_array(ProjectOrGlobalMembership::class, $traits, true)) {
                 $unscoped[] = $model;
             }
         }
