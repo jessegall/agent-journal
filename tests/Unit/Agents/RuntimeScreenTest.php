@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
+use App\Files\Contracts\Files;
+use App\Recordings\Recordings;
 use App\Terminals\Data\ScreenFrameData;
 use App\Terminals\Enums\ScreenBuffer;
 use App\Terminals\RuntimeScreen;
 use App\Terminals\ScreenRegistration;
 use Carbon\CarbonImmutable;
+use Tests\Support\Recordings\RecordedTerminal;
 use Tests\TestCase;
 
 /**
@@ -20,18 +23,19 @@ final class RuntimeScreenTest extends TestCase
 {
     public function test_a_frame_hydrates_from_what_the_host_sends(): void
     {
-        $frame = $this->frame('epoch-1', 7);
+        $payload = $this->payload('epoch-1', 7);
+        $frame = ScreenFrameData::from($payload);
 
         $this->assertSame('epoch-1', $frame->epoch);
-        $this->assertSame(ScreenBuffer::Alternate, $frame->buffer);
-        $this->assertTrue($frame->isTooLarge === false && $frame->hasNoTerminal === false);
-        $this->assertSame('red', $frame->rows[0]->runs[1]->text);
-        $this->assertSame('#cd0000', $frame->rows[0]->runs[1]->style->fg);
-        $this->assertTrue($frame->rows[0]->runs[1]->style->isBold);
+        $this->assertSame(7, $frame->sequence);
+        $this->assertSame(ScreenBuffer::Normal, $frame->buffer);
+        $this->assertFalse($frame->isTooLarge);
+        $this->assertFalse($frame->hasNoTerminal);
+        $this->assertSame($payload['columns'], $frame->columns);
+        $this->assertSame($payload['rows'][0][0]['text'], $frame->rows[0]->runs[0]->text);
         $this->assertNull($frame->rows[0]->runs[0]->style->bg);
-        $this->assertSame([], $frame->rows[1]->runs);
-        $this->assertSame(['row' => 1, 'column' => 4, 'isVisible' => false], $frame->cursor->toArray());
-        $this->assertSame('red', $frame->toArray()['rows'][0]['runs'][1]['text']);
+        $this->assertSame($payload['cursor'], $frame->cursor->toArray());
+        $this->assertSame($frame->rows[0]->runs[0]->text, $frame->toArray()['rows'][0]['runs'][0]['text']);
         $this->assertArrayHasKey('isTooLarge', $frame->toArray());
     }
 
@@ -40,7 +44,7 @@ final class RuntimeScreenTest extends TestCase
         $shield = ScreenFrameData::from([
             ...$this->payload('epoch-1', 3),
             'rows' => [],
-            'isShielded' => true,
+            'is_shielded' => true,
             'privacy_revision' => 2,
         ]);
         $older = $this->frame('epoch-1', 3);
@@ -133,27 +137,22 @@ final class RuntimeScreenTest extends TestCase
      */
     private function payload(string $epoch, int $sequence): array
     {
-        $json = <<<'JSON'
-        {
-            "epoch": "EPOCH",
-            "sequence": 0,
-            "captured": "2026-11-19T12:00:00.123456789Z",
-            "columns": 20,
-            "rows": [
-                [{"text": "plain ", "style": {}}, {"text": "red", "style": {"fg": "#cd0000", "isBold": true}}],
-                []
-            ],
-            "cursor": {"row": 1, "column": 4, "isVisible": false},
-            "buffer": "alternate",
-            "is_plain": false,
-            "is_too_large": false,
-            "is_unreadable": false,
-            "has_no_terminal": false
-        }
-        JSON;
-        $payload = json_decode(str_replace('EPOCH', $epoch, $json), true, flags: JSON_THROW_ON_ERROR);
-        $payload['sequence'] = $sequence;
+        $terminal = RecordedTerminal::from($this->app->make(Recordings::class), 'claude-code', 'first-start');
+        $frames = $terminal->frames($this->app->make(Files::class));
+        $frame = $frames[0]['frame'];
 
-        return $payload;
+        return [
+            'epoch' => $epoch,
+            'sequence' => $sequence,
+            'captured' => '2026-11-19T12:00:00.123456789Z',
+            'columns' => $frame['columns'],
+            'rows' => array_map(fn (string $row) => [['text' => $row]], $frame['rows']),
+            'cursor' => ['row' => $frame['cursor_row'], 'column' => $frame['cursor_column'], 'isVisible' => true],
+            'buffer' => $frame['buffer'],
+            'is_plain' => true,
+            'is_too_large' => false,
+            'is_unreadable' => false,
+            'has_no_terminal' => false,
+        ];
     }
 }

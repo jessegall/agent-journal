@@ -19,9 +19,8 @@ final readonly class RecordedTerminal
 {
     private function __construct(public FilePath $folder, private CutExchange $exchange) {}
 
-    public static function from(Recordings $recordings, string $driver): self
+    public static function from(Recordings $recordings, string $driver, string $scenario = 'terminal-turn'): self
     {
-        $scenario = 'terminal-turn';
         $recording = $recordings->scenario($driver, $scenario);
 
         foreach ($recording->exchangesOn(Wire::Driver) as $name) {
@@ -32,13 +31,23 @@ final readonly class RecordedTerminal
             }
         }
 
-        Assert::fail("The {$driver} terminal turn recorded no terminal session.");
+        Assert::fail("The {$driver}/{$scenario} recording has no terminal session.");
+    }
+
+    /**
+     * @return list<array{offset: int, frame: array{
+     *     rows: list<string>, cursor_row: int, cursor_column: int, columns: int, buffer: string
+     * }}>
+     */
+    public function frames(Files $files): array
+    {
+        return $files->readJson($this->folder->child('frames.json'));
     }
 
     /** @return list<RecordedTurn> */
     public function turns(Files $files): array
     {
-        $frames = $files->readJson($this->folder->child('frames.json'));
+        $frames = $this->frames($files);
         $inputs = array_values(array_filter(
             $this->exchange->events,
             fn (RecordedEvent $event) => $event->type === RecordedEventType::Typed && ! $event->isSecret,

@@ -1,20 +1,26 @@
-package recording
+package recording_test
 
 import (
 	"bytes"
-	"strings"
 	"testing"
+
+	"journal-runner/recorded"
+	"journal-runner/recording"
 )
 
 func TestRecordKeysKeepsEveryByteAndDrawsOnlyWhatWasTyped(t *testing.T) {
-	typed := "ab\x1b[B\x1b[200~pasted text\x1b[201~\rc"
-	var record, screen bytes.Buffer
+	_, fixture := recorded.MustTerminal(t, "claude-code", "change-model")
+	var typed, record, screen bytes.Buffer
+	for _, input := range fixture.Inputs {
+		typed.Write(input.Bytes)
+	}
 
-	if err := RecordKeys(strings.NewReader(typed), &record, &screen); err != nil {
+	if err := recording.RecordKeys(bytes.NewReader(typed.Bytes()), &record, &screen); err != nil {
 		t.Fatal(err)
 	}
 
-	if record.String() != typed || screen.String() != "abpasted text\r\nc" {
+	want := "Check your pending journal work.\r\n/model claude-sonnet-5-5\r\n\r\nRun: ls.\r\n"
+	if !bytes.Equal(record.Bytes(), typed.Bytes()) || screen.String() != want {
 		t.Fatalf("recorded %q and drew %q", record.String(), screen.String())
 	}
 }
