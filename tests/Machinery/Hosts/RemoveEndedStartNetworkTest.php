@@ -16,7 +16,8 @@ use Tests\TestCase;
 
 /**
  * Every end of a start on a contained host removes its session's network, also a start that failed before any runtime
- * opened; a start on a host that runs its processes itself made no network, so nothing is removed there.
+ * opened and one whose agent retired since; a start on a host that runs its processes itself made no network, so
+ * nothing is removed there.
  */
 #[TestsMachinery(RemoveEndedStartNetwork::class)]
 final class RemoveEndedStartNetworkTest extends TestCase
@@ -31,6 +32,23 @@ final class RemoveEndedStartNetworkTest extends TestCase
         $this->app->make(RemoveEndedStartNetwork::class)->handle(new SessionProcessStopped($start->id));
 
         // The stop's own event may have removed it already; either way the session's network is what is removed.
+        $this->journal->assertResult(
+            [$this->app->make(ArrangementSetting::class)->sessionContainerName($start->session_id)],
+            array_values(array_unique(array_map(
+                fn ($removal) => $this->journal->payloadOf($removal)['network'],
+                $this->networkRemovalsOn('Box'),
+            ))),
+        );
+    }
+
+    public function test_the_ended_start_of_a_retired_agent_still_has_its_network_removed(): void
+    {
+        $this->journal->arrangeContainedJournal()->enrollContainedHost('Box', [base_path()]);
+        $start = $this->endedStartOn('Box');
+        $this->journal->withAgent('Driven', fn (TestAgent $driven) => $driven->retire());
+
+        $this->app->make(RemoveEndedStartNetwork::class)->handle(new SessionProcessStopped($start->id));
+
         $this->journal->assertResult(
             [$this->app->make(ArrangementSetting::class)->sessionContainerName($start->session_id)],
             array_values(array_unique(array_map(

@@ -6,6 +6,7 @@ namespace App\Hosts;
 
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommittedFactListenerFailed;
 use App\Hosts\Commands\ClaimHostInstructions\ClaimHostInstructionsCommand;
 use App\Hosts\Commands\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
 use App\Hosts\Commands\NotifyHostInstruction\NotifyHostInstructionCommand;
@@ -25,13 +26,20 @@ use App\Hosts\Protocol\Payloads\HostProjectReadReportPayload;
 use App\Hosts\Values\HostContext;
 use App\Projects\Commands\NotifyProjectRead\NotifyProjectReadCommand;
 use App\Projects\Values\ProjectFileText;
+use App\Support\Command;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 
 /**
  * The journal's answer to each call of host protocol 1: the call's validated body, run as the journal's command for it.
  */
 final readonly class JournalHostCalls implements HostCalls
 {
-    public function __construct(private CommandBus $commands, private HostWake $wake, private HostClaimSlots $slots) {}
+    public function __construct(
+        private CommandBus $commands,
+        private HostWake $wake,
+        private HostClaimSlots $slots,
+        private ExceptionHandler $failures,
+    ) {}
 
     /**
      * A claim that finds nothing waits for a wake, and a newer claim of the same host takes the place of an older one.
@@ -69,7 +77,7 @@ final readonly class JournalHostCalls implements HostCalls
     #[Dispatches(NotifyHostInstructionCommand::class)]
     public function answerInstruction(HostContext $host, string $instruction, HostAnswerPayload $body): void
     {
-        $this->commands->run(new NotifyHostInstructionCommand($host->hostId, $instruction, $body->toJson()));
+        $this->report(new NotifyHostInstructionCommand($host->hostId, $instruction, $body->toJson()));
     }
 
     #[Dispatches(PullHostPrivateValueCommand::class)]
@@ -83,13 +91,13 @@ final readonly class JournalHostCalls implements HostCalls
     #[Dispatches(NotifyHostOutputCommand::class)]
     public function notifyProcessOutput(HostContext $host, string $process, HostOutputPayload $body): void
     {
-        $this->commands->run(new NotifyHostOutputCommand($host->hostId, $process, $body));
+        $this->report(new NotifyHostOutputCommand($host->hostId, $process, $body));
     }
 
     #[Dispatches(NotifyHostProcessCommand::class)]
     public function notifyProcessReport(HostContext $host, string $process, HostProcessReportPayload $body): void
     {
-        $this->commands->run(new NotifyHostProcessCommand($host->hostId, $process, $body));
+        $this->report(new NotifyHostProcessCommand($host->hostId, $process, $body));
     }
 
     /**
@@ -99,20 +107,20 @@ final readonly class JournalHostCalls implements HostCalls
     public function notifyInventory(HostContext $host, HostInventoryPayload $body): void
     {
         $this->slots->endEarlierClaims($host->hostId);
-        $this->commands->run(new NotifyHostInventoryCommand($host->hostId, $body));
+        $this->report(new NotifyHostInventoryCommand($host->hostId, $body));
     }
 
     #[Dispatches(NotifyHostHeartbeatCommand::class)]
     public function notifyHeartbeat(HostContext $host, HostHeartbeatPayload $body): void
     {
         $heartbeat = new NotifyHostHeartbeatCommand($host->hostId, $body->liveProcesses, $body->answeredThrough);
-        $this->commands->run($heartbeat);
+        $this->report($heartbeat);
     }
 
     #[Dispatches(NotifyProjectReadCommand::class)]
     public function notifyProjectRead(HostContext $host, string $read, HostProjectReadReportPayload $body): void
     {
-        $this->commands->run(new NotifyProjectReadCommand(
+        $this->report(new NotifyProjectReadCommand(
             $host->hostId,
             $read,
             $body->entries,
@@ -120,6 +128,22 @@ final readonly class JournalHostCalls implements HostCalls
             $body->isTruncated,
             $body->failure,
         ));
+    }
+
+    /**
+     * Runs a report of the host's. A listener that failed on a fact the report committed is the journal's failure,
+     * reported apart: the report stands, so the host is answered as heard and never sends it again ahead of every
+     * later report.
+     *
+     * @param  Command<mixed>  $report
+     */
+    private function report(Command $report): void
+    {
+        try {
+            $this->commands->run($report);
+        } catch (CommittedFactListenerFailed $failed) {
+            $this->failures->report($failed);
+        }
     }
 
     /**

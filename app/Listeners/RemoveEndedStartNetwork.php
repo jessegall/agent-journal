@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Accounts\Enums\CommandEntry;
-use App\Attributes\Listeners\InCommandTransaction;
 use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Hosts\Commands\RemoveSessionNetwork\RemoveSessionNetworkCommand;
@@ -15,9 +14,9 @@ use App\Sessions\Contracts\StartEndEvent;
 
 /**
  * Every end of a start on a contained host, stopped, called off or refused, removes its session's network from the
- * agent daemon once no other start of that session is still live, so a failed start leaves no network behind.
+ * agent daemon once no other start of that session is still live, so a failed start leaves no network behind. It runs
+ * after the end is committed: the end never waits on it, and its failure never undoes the end.
  */
-#[InCommandTransaction]
 final readonly class RemoveEndedStartNetwork implements Listener
 {
     private const string TRUSTED_ENTRY = 'removing what an ended start left';

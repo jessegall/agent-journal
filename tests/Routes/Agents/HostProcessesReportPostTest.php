@@ -4,11 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
+use App\Bus\Exceptions\CommittedFactListenerFailed;
+use App\Bus\IsolatedListener;
+use App\Events\Connections\HostProcessExited;
 use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
+use App\Hosts\Enums\HostProcessStatus;
+use App\Hosts\Protocol\HostProcessReportType;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Exceptions;
+use Tests\Fixtures\Hosts\FailingProcessEndListener;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Hosts\TestEnrolledHost;
+use Tests\Support\Hosts\TestHostProcess;
 use Tests\Support\Seeding\TestJournal;
 
 /**
@@ -36,6 +46,38 @@ final class HostProcessesReportPostTest extends GuardedRouteEntryTestCase
         $this->assertSame(
             [410, 'record_unavailable'],
             [$answer->getStatusCode(), json_decode((string) $answer->getContent(), true)['code'] ?? null],
+        );
+    }
+
+    /**
+     * A listener that fails on the end the report committed is the journal's failure, reported apart: the report stands
+     * and is answered as heard, so the host sends its later reports instead of this one again.
+     */
+    public function test_a_listener_failing_on_the_committed_end_leaves_the_report_heard_and_is_reported(): void
+    {
+        Exceptions::fake();
+        Event::listen(HostProcessExited::class, new IsolatedListener(
+            HostProcessExited::class,
+            FailingProcessEndListener::class.'@handle',
+        ));
+        $this->journal->owner()
+            ->enrollHost('Mac', [base_path()])
+            ->host('Mac', fn (TestEnrolledHost $mac) => $mac
+                ->openProcess('shell')
+                ->process('shell', fn (TestHostProcess $shell) => $shell->report(HostProcessReportType::Running)));
+        $process = $this->journal->hostProcessCalled('shell')->id;
+
+        $answer = $this->journal->hostCall(
+            $this->journal->hostCalled('Mac'),
+            'POST',
+            route('agents.host.processes.report', ['process' => $process], false),
+            ['process_id' => $process, 'report' => 'exited', 'generation' => 0, 'exit_code' => 0],
+        );
+
+        Exceptions::assertReported(CommittedFactListenerFailed::class);
+        $this->journal->assertResult(
+            [204, HostProcessStatus::Exited],
+            [$answer->getStatusCode(), $this->journal->hostProcessCalled('shell')->status],
         );
     }
 
