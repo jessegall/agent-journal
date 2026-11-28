@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
+use App\Hosts\Commands\AllowHostImages\AllowHostImagesCommand;
 use App\Hosts\Commands\BuildHostDriverImage\BuildHostDriverImageCommand;
 use App\Hosts\Commands\RecordDriverImageAnswer\RecordDriverImageAnswerCommand;
 use App\Hosts\Commands\ReserveHostDriverImages\ReserveHostDriverImagesCommand;
@@ -53,6 +54,26 @@ final class RecordDriverImageAnswerTest extends TestCase
         $this->journal->assertResult(
             [[DriverImageStatus::Allowing, $built['image']], DriverImageStatus::Ready, 0],
             [$afterBuild, $this->image->refresh()->status, $this->image->failures],
+        );
+    }
+
+    public function test_a_ready_image_allowed_again_after_a_restart_runs_its_checks_again_and_is_ready(): void
+    {
+        $this->answer(HostInstructionType::BuildImage, $this->builtReply());
+        $this->answer(HostInstructionType::AllowImages, ['allowed' => 2, 'absent' => []]);
+        $firstChecks = $this->latest(HostInstructionType::RunContainers);
+        $runs = count($this->journal->payloadOf($firstChecks)['runs']);
+        $this->answer(HostInstructionType::RunContainers, ['results' => array_fill(0, $runs, $this->passing())]);
+
+        $this->image->refresh()->reallow();
+        $this->journal->asSystem(new AllowHostImagesCommand($this->image->host_id, [(string) $this->image->image]));
+        $this->answer(HostInstructionType::AllowImages, ['allowed' => 2, 'absent' => []]);
+        $secondChecks = $this->latest(HostInstructionType::RunContainers);
+        $this->answer(HostInstructionType::RunContainers, ['results' => array_fill(0, $runs, $this->passing())]);
+
+        $this->journal->assertResult(
+            [true, DriverImageStatus::Ready],
+            [$secondChecks->id !== $firstChecks->id, $this->image->refresh()->status],
         );
     }
 

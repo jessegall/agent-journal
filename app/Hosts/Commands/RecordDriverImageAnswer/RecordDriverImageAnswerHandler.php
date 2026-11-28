@@ -107,7 +107,8 @@ final readonly class RecordDriverImageAnswerHandler implements CommandHandler
         $recipe = DriverImageRecipeRecord::query()->findOrFail($image->driver_image_recipe_id);
         $checks = $this->instructions->runContainers(
             $image->host_id,
-            HostInstructionSource::keyed("driver-image-checks:{$image->id}:{$image->attempt}"),
+            // One round of checks to each allow the image is named in: an allow again after a restart checks again.
+            HostInstructionSource::keyed("driver-image-checks:{$image->id}:{$instruction->id}"),
             HostContainerRunsPayload::from(['runs' => $this->checks->of($image->builtImage(), $recipe->folder)]),
         );
         $image->markChecksSent($checks->getKey());
