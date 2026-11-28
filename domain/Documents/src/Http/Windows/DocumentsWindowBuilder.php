@@ -46,7 +46,7 @@ final readonly class DocumentsWindowBuilder implements WindowBuilder
             'type' => $type === LibraryTypeFilter::All ? null : $type->value,
             'query' => $filters->query,
             'revisions' => $filters->revisions ? 1 : null,
-        ]);
+        ], fn (mixed $value) => $value !== null && $value !== '');
 
         return DocumentsPaneData::build()
             ->items($items)

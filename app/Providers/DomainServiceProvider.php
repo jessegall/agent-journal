@@ -59,6 +59,7 @@ class DomainServiceProvider extends ServiceProvider
             $this->registerDomainProviders($registry);
             $this->app->make(DeclaredSurfaceCheck::class)->registerDeclarations(
                 $this->app->make(ClientDeclarations::class),
+                $this->app->make(SurfaceAttributeMap::class),
             );
         });
         $this->keepMigrationsOfUnbootedDomains($registry);

@@ -34,9 +34,11 @@ final readonly class RulesWindowBuilder implements WindowBuilder
             ->value("Rule {$rule->number}")
             ->finish())->values()->all();
 
+        $query = $filters->search === '' ? [] : ['q' => $filters->search];
+
         return RulesPaneData::build()
             ->items($items)
-            ->fullUrl(route('rules.list', array_filter(['q' => $filters->search]), false))
+            ->fullUrl(route('rules.list', $query, false))
             ->finish();
     }
 }

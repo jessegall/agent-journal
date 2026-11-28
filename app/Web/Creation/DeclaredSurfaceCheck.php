@@ -24,14 +24,17 @@ final class DeclaredSurfaceCheck
 
     public function __construct(private readonly PageFactory $pages, private readonly WindowFactory $windows) {}
 
-    public function registerDeclarations(ClientDeclarations $declarations): void
+    public function registerDeclarations(ClientDeclarations $declarations, SurfaceAttributeMap $policies): void
     {
-        $this->registerPage(CorePages::loginOwner(), 'login', CorePages::login());
+        $login = CorePages::login();
+        $policies->forPage($login->type);
+        $this->registerPage(CorePages::loginOwner(), 'login', $login);
 
         foreach ($declarations->pages() as $page) {
             $this->registerPage($page->owner, $page->key, $page->surface);
 
             if ($page->window !== null) {
+                $policies->forType($page->window->type);
                 $this->registerWindow($page->owner, $page->key, $page->window);
             }
         }
@@ -72,6 +75,10 @@ final class DeclaredSurfaceCheck
             throw InvalidSurface::sharedComponent($key, $file);
         }
 
+        if (isset($this->windowFiles[$file])) {
+            throw InvalidSurface::repeatedWindowComponent($key, $file);
+        }
+
         $this->windows->register($window->type, $window->builder);
         $this->windowFiles[$file] = true;
     }
@@ -96,7 +103,8 @@ final class DeclaredSurfaceCheck
 
         $builder = Reflector::of($surface->builder);
 
-        if (! $builder->isFinal() || $builder->implements($otherContract) || ! $builder->hasMethod('build')) {
+        if (! $builder->isFinal() || $builder->parent()->isDefined()
+            || $builder->implements($otherContract) || ! $builder->hasMethod('build')) {
             throw InvalidSurface::builder($key, $surface->builder, $surface->type);
         }
 

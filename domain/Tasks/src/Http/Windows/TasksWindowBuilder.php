@@ -9,6 +9,7 @@ use App\Support\Layout\LayoutRowData;
 use App\Web\Creation\Contracts\WindowBuilder;
 use App\Web\Creation\SurfaceAttributeMap;
 use Domain\Tasks\Data\TasksPaneData;
+use Domain\Tasks\Enums\TaskHolderFilter;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Http\Requests\TasksRequest;
 use Domain\Tasks\Models\Task;
@@ -33,8 +34,11 @@ final readonly class TasksWindowBuilder implements WindowBuilder
             ->value($task->status->standingWord())
             ->finish())->values()->all();
 
-        $query = array_filter($filters->toArray(), fn (mixed $value) => $value !== null && $value !== 1
-            && $value !== \Domain\Tasks\Enums\TaskHolderFilter::Any->value);
+        $query = array_filter($filters->toArray(), fn (mixed $value) => $value !== null && $value !== 1);
+
+        if ($filters->holder === TaskHolderFilter::Any) {
+            unset($query['holder']);
+        }
 
         return TasksPaneData::build()->items($items)->fullUrl(route('tasks.list', $query, false))->finish();
     }

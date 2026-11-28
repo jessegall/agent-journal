@@ -54,7 +54,7 @@ final class DriverWordTest extends TestCase
         'app/Exceptions/SignInProtocolMissing.php',
         'app/Exceptions/SupervisorInsideTransaction.php',
         'app/Http/Controllers/Api/ListProposalsController.php',
-        'app/Http/Pages/Sharing/Resolvers/GatewaySettingsResolver.php',
+        'app/Http/Pages/Sharing/GatewaySettingsPageBuilder.php',
         'app/Models/CommandRules/RuleProposal.php',
         'app/Models/Sharing/ShareGatewayEndpoint.php',
         'app/Models/Sharing/ShareGatewayOperation.php',

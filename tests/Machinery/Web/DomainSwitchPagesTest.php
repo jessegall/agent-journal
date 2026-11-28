@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Web;
 
+use App\CorePages;
 use App\Http\Middleware\Web\HandleInertiaRequests;
+use App\Support\ClientDeclarations;
 use App\Support\DomainRegistry;
+use App\Terminals\Data\TerminalWindowData;
+use App\Web\Creation\Exceptions\MissingBuilder;
 use App\Web\Creation\PageFactory;
 use App\Web\Creation\WindowFactory;
+use Domain\Plans\Data\PlansPaneData;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Http\Windows\PlansWindowBuilder;
 use Domain\Plans\Models\Plan;
@@ -54,6 +59,47 @@ final class DomainSwitchPagesTest extends TestCase
         $this->inertia('/rules')->assertOk();
     }
 
+    public function test_installed_owners_register_exact_pairs_once_from_their_declarations(): void
+    {
+        $declarations = $this->app->make(ClientDeclarations::class);
+        $pages = $this->app->make(PageFactory::class);
+        $windows = $this->app->make(WindowFactory::class);
+        $windowFiles = [];
+
+        foreach ($declarations->owners() as $owner) {
+            foreach ($owner->pages as $definition) {
+                $registered = $declarations->page($owner->fullKey('page', $definition->key));
+                $this->assertSame($definition->surface, $registered->surface);
+                $this->assertSame($definition->surface->builder, $pages->builderFor($definition->surface->type));
+                $this->assertFalse($windows->hasBuilderFor($definition->surface->type));
+
+                if ($definition->window === null) {
+                    continue;
+                }
+
+                $this->assertSame($definition->window, $registered->window);
+                $this->assertSame($definition->window->builder, $windows->builderFor($definition->window->type));
+                $this->assertFalse($pages->hasBuilderFor($definition->window->type));
+                $this->assertStringStartsWith($owner->pageFolder().'/', $registered->windowFile);
+                $this->assertNotContains($registered->windowFile, $windowFiles);
+                $windowFiles[] = $registered->windowFile;
+            }
+        }
+
+        $this->assertCount(10, $windowFiles);
+        $login = CorePages::login();
+        $this->assertSame($login->builder, $pages->builderFor($login->type));
+        $this->assertFalse($declarations->declares('login'));
+        $this->assertFalse($windows->hasBuilderFor($login->type));
+    }
+
+    public function test_a_page_only_type_refuses_window_creation_by_its_exact_name(): void
+    {
+        $this->expectExceptionObject(MissingBuilder::forType('window', TerminalWindowData::class));
+
+        $this->app->make(WindowFactory::class)->create(TerminalWindowData::class, Request::create('/'));
+    }
+
     public function test_a_disabled_pane_does_not_resolve_its_builder_when_named_in_a_partial(): void
     {
         $resolved = 0;
@@ -67,6 +113,10 @@ final class DomainSwitchPagesTest extends TestCase
             'X-Inertia-Partial-Data' => 'window_plans_list',
         ])->assertOk()->assertJsonMissingPath('props.window_plans_list');
         $this->assertSame(0, $resolved);
+        $this->assertSame(
+            PlansWindowBuilder::class,
+            $this->app->make(WindowFactory::class)->builderFor(PlansPaneData::class),
+        );
     }
 
     public function test_unbooted_modules_have_no_registration_in_either_factory(): void

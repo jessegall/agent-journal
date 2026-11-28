@@ -28,6 +28,11 @@ final class InvalidSurface extends LogicException
         return new self("The surface {$key} shares {$file} between page and window roles.");
     }
 
+    public static function repeatedWindowComponent(string $key, string $file): self
+    {
+        return new self("The window {$key} uses the compact component {$file} already declared by another window.");
+    }
+
     public static function windowType(string $key, string $type): self
     {
         return new self("The window {$key} must use its own Data class. It declares {$type}.");

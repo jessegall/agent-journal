@@ -22,10 +22,30 @@ final class PageBuilderPlaceTest extends TestCase
             $relative = str_replace(base_path().'/', '', $file);
             $source = (string) file_get_contents($file);
 
+            $builderRoles = 0;
+
             foreach ($roles as $contract => $folder) {
-                if (self::declaresRole($source, $contract) && ! str_contains($relative, $folder)) {
+                if (! self::declaresRole($source, $contract)) {
+                    continue;
+                }
+
+                if (! str_contains($relative, $folder)) {
                     $outside[] = "{$relative} implements {$contract} outside {$folder}";
                 }
+
+                if ($contract === 'SectionResolver') {
+                    continue;
+                }
+
+                $builderRoles++;
+
+                if (! self::declaresConcreteBuild($source)) {
+                    $outside[] = "{$relative} must declare its concrete build result";
+                }
+            }
+
+            if ($builderRoles > 1) {
+                $outside[] = "{$relative} implements both surface builder contracts";
             }
         }
 
@@ -38,6 +58,12 @@ final class PageBuilderPlaceTest extends TestCase
         $this->assertTrue(self::declaresRole('final class FileWindowBuilder implements WindowBuilder {}', 'WindowBuilder'));
         $this->assertTrue(self::declaresRole('final class Notices implements SectionResolver {}', 'SectionResolver'));
         $this->assertFalse(self::declaresRole('final class TaskRecords implements TaskResolver {}', 'PageBuilder'));
+    }
+
+    private static function declaresConcreteBuild(string $source): bool
+    {
+        return preg_match('/\bfunction\s+build\s*\([^)]*\)\s*:\s*(\w+)\s*\{/', $source, $match) === 1
+            && $match[1] !== 'Data';
     }
 
     private static function declaresRole(string $source, string $contract): bool

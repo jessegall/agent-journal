@@ -34,7 +34,7 @@ final readonly class FileWindowBuilder implements WindowBuilder
         $path = $this->requests->from(FileWindowRequest::class, $visit)->path();
         $pane = FilePaneData::build()
             ->path($path)
-            ->fullUrl(route('connections.file', array_filter(['path' => $path]), false))
+            ->fullUrl(route('connections.file', $path === '' ? [] : ['path' => $path], false))
             ->lines([])
             ->isTruncated(false);
 
