@@ -245,7 +245,7 @@ final class ScenarioRun
             return null;
         }
 
-        return ProjectBinding::query()->acrossProjects()->unrevoked()->find($bindingId);
+        return ProjectBinding::query()->acrossProjects()->unrevoked()->with('host')->find($bindingId);
     }
 
     /**
