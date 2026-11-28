@@ -14,13 +14,11 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * What a finished tool call shows of an agent's work: a file it read or edited, or a command it ran. A command that
- * looks like it carries a secret keeps only its first word, and no tool's output is ever kept.
+ * What a finished tool call shows of an agent's work: a file it read or edited, or a command it ran, shown as
+ * ShownShellLine masks it; no tool's output is ever kept.
  */
 final readonly class ToolActivity
 {
-    private const string SECRET_WORDS = '~token|secret|passw|api[_-]?key|authorization|bearer|credential~i';
-
     private function __construct(
         public ActivityType $type,
         public string $subject,
@@ -56,11 +54,7 @@ final readonly class ToolActivity
             return None::create();
         }
 
-        if (preg_match(self::SECRET_WORDS, $command) === 1) {
-            return new Some(new self(ActivityType::Ran, strtok($command, " \t\n").' with a private value'));
-        }
-
-        return new Some(new self(ActivityType::Ran, $command));
+        return new Some(new self(ActivityType::Ran, ShownShellLine::of($command)));
     }
 
     /**

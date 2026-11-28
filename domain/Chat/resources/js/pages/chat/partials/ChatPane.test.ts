@@ -3,6 +3,8 @@ import { enableAutoUnmount, flushPromises, mount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ref } from "vue";
 import type { ChatData } from "@generated/types/chat";
+import type { RunningCommandData } from "@generated/types/core";
+import { notifyRunningCommand } from "@kit/runningCommands";
 
 const revealedProps = ref(new Set<string>());
 const purgers: Array<() => void> = [];
@@ -78,7 +80,7 @@ vi.mock("./VerifyingSessionCard.vue", () => ({
 
 const { default: ChatPane } = await import("./ChatPane.vue");
 
-function chatWith(inboxId: string, runningCommand: string | null = null): ChatData {
+function chatWith(inboxId: string, runningCommand: RunningCommandData | null = null): ChatData {
   return {
     agents: [{ id: "agent-1", name: "Main agent", status: { sessionState: "working" } }],
     selectedAgentId: "agent-1",
@@ -115,7 +117,7 @@ function chatWith(inboxId: string, runningCommand: string | null = null): ChatDa
   } as unknown as ChatData;
 }
 
-function mountPane(inboxId = "conversation-1", runningCommand: string | null = null) {
+function mountPane(inboxId = "conversation-1", runningCommand: RunningCommandData | null = null) {
   return mount(ChatPane, {
     props: {
       chat: chatWith(inboxId, runningCommand),
@@ -126,6 +128,10 @@ function mountPane(inboxId = "conversation-1", runningCommand: string | null = n
       protectedProp: "window_chat_conversation",
     },
   });
+}
+
+function runningLine(line: string, changedAt: string): RunningCommandData {
+  return { agentId: "agent-1", line, isRunning: true, changedAt };
 }
 
 // A pane left mounted would answer the next test's reveal too.
@@ -186,28 +192,40 @@ describe("ChatPane", () => {
     ]);
   });
 
-  it("shows the agent's running command above the composer, and changes it when the chat is read again", async () => {
+  it("shows the agent's running command above the composer from the page's seed", async () => {
     revealedProps.value = new Set(["window_chat_conversation"]);
-    const pane = mountPane("conversation-1", "Ran npm test");
+    const pane = mountPane("conversation-1", runningLine("Bash npm test", "2026-11-28T10:00:00.000000Z"));
     await flushPromises();
 
-    const line = pane.get("[data-running-command]");
-    expect(line.text()).toBe("Ran npm test");
+    const line = pane.get("[data-running-line]");
+    expect(line.text()).toBe("Bash npm test");
     expect(
       line.element.compareDocumentPosition(pane.get('[aria-label="Composer"]').element) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-
-    await pane.setProps({ chat: chatWith("conversation-1", "Edited src/b.php") });
-
-    expect(pane.get("[data-running-command]").text()).toBe("Edited src/b.php");
   });
 
-  it("shows no running command when the agent has done nothing since its last message", async () => {
+  it("follows a pushed command with no read, and forgets it in another chat", async () => {
+    revealedProps.value = new Set(["window_chat_conversation"]);
+    const pane = mountPane();
+    await flushPromises();
+    const readsBefore = reads.length;
+
+    notifyRunningCommand(runningLine("Bash npm run build", "2026-11-28T10:00:05.000000Z"));
+    await flushPromises();
+    expect(pane.get("[data-running-line]").text()).toBe("Bash npm run build");
+    expect(reads).toHaveLength(readsBefore);
+
+    await pane.setProps({ chat: chatWith("conversation-2") });
+    expect(pane.find("[data-running-line]").exists()).toBe(false);
+  });
+
+  it("shows the idle word when the agent has no command", async () => {
     revealedProps.value = new Set(["window_chat_conversation"]);
     const pane = mountPane();
     await flushPromises();
 
-    expect(pane.find("[data-running-command]").exists()).toBe(false);
+    expect(pane.find("[data-running-line]").exists()).toBe(false);
+    expect(pane.get("[data-running-idle]").text()).toBe("thinking");
   });
 });

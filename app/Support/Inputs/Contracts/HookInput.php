@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Inputs\Contracts;
 
+use App\Agents\Contracts\RunningTools;
 use App\Agents\Drivers\Contracts\NativeTurnRecords;
 use App\Bus\Contracts\Command;
 use App\Contracts\Events\Event;
@@ -13,7 +14,9 @@ use App\Sessions\Contracts\ConversationVisits;
 use App\Stacks\Decisions\Contracts\AnswerPart;
 use App\Stacks\Inputs\Contracts\HookHandler;
 use App\Stacks\References\StateReference;
+use App\Support\Decisions\Decision;
 use App\Support\Inputs\Values\HookIdentity;
+use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use PhpOption\Option;
 
@@ -66,4 +69,10 @@ interface HookInput
      * Records the native turn this hook starts, for a submitted prompt; any other hook starts none.
      */
     public function recordTurn(NativeTurnRecords $turns, string $sessionId, int|null $generation): void;
+
+    /**
+     * Records the tool call the agent's chat line names: a call let run starts it, a finished call finishes it, and a
+     * new turn or context clears it; a denied call and any other hook change nothing.
+     */
+    public function recordTool(RunningTools $tools, StackTarget $target, Decision $decision): void;
 }

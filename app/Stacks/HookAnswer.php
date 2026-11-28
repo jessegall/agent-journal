@@ -21,6 +21,11 @@ use PhpOption\Option;
 final readonly class HookAnswer
 {
     /**
+     * The decision the walk itself gave, kept when a decider replaces it, such as the shell admission's runner line.
+     */
+    public Decision $walkedDecision;
+
+    /**
      * @param  list<string>  $context
      * @param  list<WalkStep>  $steps
      * @param  list<string>  $messages
@@ -33,7 +38,9 @@ final readonly class HookAnswer
         public AgentStack $stack,
         public array $messages = [],
         public array $effects = [],
-    ) {}
+    ) {
+        $this->walkedDecision = $decision;
+    }
 
     /**
      * The same walk answered by another decision on another stack, such as a refused rewrite on the stack from before
@@ -42,6 +49,15 @@ final readonly class HookAnswer
     public function replacedBy(HookDecider $decider, Decision $decision, AgentStack $stack): self
     {
         return $this->decidedAs($decision, $stack);
+    }
+
+    /**
+     * The decision the agent's chat line names: a denial as it is, else what the walk decided, so an admitted line is
+     * named as the agent or a state wrote it and never as the runner's line that runs it.
+     */
+    public function shownDecision(): Decision
+    {
+        return $this->isDenied() ? $this->decision : $this->walkedDecision;
     }
 
     /**
