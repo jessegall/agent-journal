@@ -53,15 +53,11 @@ final class SessionLifeTest extends TestCase
      */
     private const int TYPING_TRIES = 5;
 
-    /**
-     * The row of the recorded Codex terminal that shows it took the first message.
-     */
-    /**
-     * The first message the Claude Code terminal is opened with, as its recorded turn was.
-     */
-    private const string FIRST_MESSAGE = 'Count slowly from 1 to 300, then say done.';
+    private const string FIRST_MESSAGE = 'Check your pending journal work.';
 
-    private const string CODEX_ANSWER = '• I’ll run ls, then write a 600-word essay about terminals.';
+    private const string CLAUDE_ANSWER = 'Your pending journal work is empty.';
+
+    private const string CODEX_ANSWER = 'Your journal overview shows no pending work:';
 
     private const array TABLES = [
         'hosts',
@@ -115,12 +111,11 @@ final class SessionLifeTest extends TestCase
         $this->journal
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
                 ->beginWorker()
-                ->driveUntil(fn (Assert $journal) => $this->pastesOf($journal, 'terminal') === 1)
+                ->driveUntil($this->onePasteOn('terminal'))
                 ->beginWorker()
-                ->driveUntil($this->answeredOn('terminal'), seconds: 20))
-            ->assertJournal(fn (Assert $journal) => $journal
-                ->where('hostProcesses.terminal.workerGeneration', 2)
-                ->where('hostProcesses.terminal.instructions', fn () => $this->pastesOf($journal, 'terminal') === 1));
+                ->driveUntil($this->answeredOn('terminal', self::CLAUDE_ANSWER), seconds: 20))
+            ->assertJournal($this->onePasteOn('terminal'))
+            ->assertJournal(fn (Assert $journal) => $journal->where('hostProcesses.terminal.workerGeneration', 2));
     }
 
     public function test_a_journal_that_dies_mid_delivery_has_the_message_typed_and_answered_once_it_is_back(): void
@@ -129,14 +124,11 @@ final class SessionLifeTest extends TestCase
 
         $this->journal
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
-                ->driveUntil(fn (Assert $journal) => $this->pastesOf($journal, 'terminal') === 1))
+                ->driveUntil($this->onePasteOn('terminal')))
             ->testHost(fn (TestHost $mac) => $mac->restartJournal())
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
-                ->driveUntil($this->answeredOn('terminal'), HostInstruction::CLAIM_SECONDS * 2))
-            ->assertJournal(fn (Assert $journal) => $journal->where(
-                'hostProcesses.terminal.instructions',
-                fn () => $this->pastesOf($journal, 'terminal') === 1,
-            ));
+                ->driveUntil($this->answeredOn('terminal', self::CLAUDE_ANSWER), HostInstruction::CLAIM_SECONDS * 2))
+            ->assertJournal($this->onePasteOn('terminal'));
     }
 
     public function test_a_headless_turn_is_opened_driven_and_finished_by_the_journal(): void
@@ -155,7 +147,7 @@ final class SessionLifeTest extends TestCase
     public function test_a_claude_code_terminal_driven_by_the_journal_answers_its_message_and_stops(): void
     {
         $this->arrangeTerminalHost()
-            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', 'done')
+            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', self::CLAUDE_ANSWER)
             ->asSystem($this->stopOf('terminal'));
 
         $this->journal
@@ -166,7 +158,7 @@ final class SessionLifeTest extends TestCase
     public function test_a_claude_code_terminal_lost_with_its_hosts_restart_is_opened_again_resuming_its_conversation(): void
     {
         $this->arrangeTerminalHost()
-            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', 'done')
+            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', self::CLAUDE_ANSWER)
             ->testHost(fn (TestHost $mac) => $mac->restartHost())
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Lost))
             ->withAgent('Terminal', fn (TestAgent $terminal) => $terminal
@@ -212,7 +204,7 @@ final class SessionLifeTest extends TestCase
     public function test_a_claude_code_and_a_codex_terminal_lost_with_their_hosts_restart_are_both_opened_again(): void
     {
         $this->arrangeTerminalHost()
-            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', 'done');
+            ->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.332', 'claude-opus-5-5', self::CLAUDE_ANSWER);
         $this->answerTerminal('Codex', 'codex', 'codex', '0.172.0', 'gpt-5.5', self::CODEX_ANSWER)
             ->testHost(fn (TestHost $mac) => $mac->restartHost())
             ->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal->waitFor(HostProcessStatus::Lost))
@@ -236,17 +228,13 @@ final class SessionLifeTest extends TestCase
         $healed = fn (int $times) => fn (Assert $journal) => $journal
             ->where('hostProcesses.terminal.generation', fn (int $generation) => $generation >= $times)
             ->where('testHost.claudeStarts', fn (array $starts) => count($starts) > $times);
-        $answered = fn (Assert $journal) => $journal
-            ->where(
-                'hostProcesses.terminal.rows',
-                fn (array|null $rows) => in_array('done', array_map(trim(...), $rows ?? []), true),
-            );
+        $answered = $this->answeredOn('terminal', self::CLAUDE_ANSWER);
 
         $this->journal->owner()
             ->showDriverArrangements()
             ->idleAgent('Terminal')
             ->enrollHost('Mac', [base_path()])
-            ->runTestHost('Mac', fn (TestHost $mac) => $mac->chooseActiveAccounts()->playSessionLifeTerminals())
+            ->runTestHost('Mac', fn (TestHost $mac) => $mac->chooseActiveAccounts())
             ->withAgent('Terminal', fn (TestAgent $terminal) => $terminal
                 ->openRuntime('Mac', base_path(), driverType: DriverType::Terminal)
                 ->proveStart(HostProcessPurpose::AgentTerminal, 'terminal'))
@@ -256,10 +244,9 @@ final class SessionLifeTest extends TestCase
         $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
             ->driveUntil($healed(1))
             ->driveUntil($this->composerShownOn('terminal')));
-        $this->typeTaken("\e[200~hello\e[201~\r", fn (Assert $journal) => in_array(
-            'done',
-            array_map(trim(...), $journal->value('hostProcesses.terminal.rows') ?? []),
-            true,
+        $this->typeTaken("\e[200~".self::FIRST_MESSAGE."\e[201~\r", fn (Assert $journal) => str_contains(
+            implode("\n", $journal->value('hostProcesses.terminal.rows') ?? []),
+            self::CLAUDE_ANSWER,
         ));
         $this->journal->hostProcess('terminal', fn (TestHostProcess $terminal) => $terminal
             ->driveUntil($answered)
@@ -361,7 +348,7 @@ final class SessionLifeTest extends TestCase
             ->idleAgent('Terminal')
             ->idleAgent('Codex')
             ->enrollHost('Mac', [base_path()])
-            ->runTestHost('Mac', fn (TestHost $mac) => $mac->chooseActiveAccounts()->playSessionLifeTerminals());
+            ->runTestHost('Mac', fn (TestHost $mac) => $mac->chooseActiveAccounts());
 
         return $this;
     }
@@ -378,14 +365,9 @@ final class SessionLifeTest extends TestCase
         string|null $model,
         string $answer,
     ): TestJournal {
-        $answered = fn (Assert $journal) => $journal
-            ->where(
-                "hostProcesses.{$name}.rows",
-                fn (array|null $rows) => in_array($answer, array_map(trim(...), $rows ?? []), true),
-            );
-
         return $this->openTerminal($agent, $name, $driver, $build, $model)->journal
-            ->hostProcess($name, fn (TestHostProcess $terminal) => $terminal->driveUntil($answered, seconds: 20));
+            ->hostProcess($name, fn (TestHostProcess $terminal) => $terminal
+                ->driveUntil($this->answeredOn($name, $answer), seconds: 20));
     }
 
     /**
@@ -402,9 +384,7 @@ final class SessionLifeTest extends TestCase
                 profile: $driver === 'codex' ? 'codex' : 'claude',
                 driverType: DriverType::Terminal,
                 model: $model,
-                firstMessage: $driver === 'codex'
-                    ? 'Run the shell command: ls. Then write a 600 word essay about terminals.'
-                    : self::FIRST_MESSAGE,
+                firstMessage: self::FIRST_MESSAGE,
             )
             ->proveStart(HostProcessPurpose::AgentTerminal, $name));
 
@@ -532,26 +512,29 @@ final class SessionLifeTest extends TestCase
     }
 
     /**
-     * A row of the named terminal's screen is the answer of the recorded turn.
+     * The terminal's screen contains the answer of the recorded turn.
      */
-    private function answeredOn(string $name): Closure
+    private function answeredOn(string $name, string $answer): Closure
     {
         return fn (Assert $journal) => $journal->where(
             "hostProcesses.{$name}.rows",
-            fn (array|null $rows) => in_array('done', array_map(trim(...), $rows ?? []), true),
+            fn (array|null $rows) => str_contains(implode("\n", $rows ?? []), $answer),
         );
     }
 
     /**
-     * How many paste instructions the journal ordered for the named terminal's first message.
+     * The journal ordered exactly one paste for the named terminal's first message.
      */
-    private function pastesOf(Assert $journal, string $name): int
+    private function onePasteOn(string $name): Closure
     {
-        return count(array_filter(
-            $journal->value("hostProcesses.{$name}.instructions") ?? [],
-            fn (HostInstructionFacts $instruction) => $instruction->facts()['type'] === HostInstructionType::WriteKeys
-                && $instruction->facts()['step'] === 'paste',
-        ));
+        return fn (Assert $journal) => $journal->where(
+            "hostProcesses.{$name}.instructions",
+            fn (array $instructions) => count(array_filter(
+                $instructions,
+                fn (HostInstructionFacts $instruction) => $instruction->facts()['type'] === HostInstructionType::WriteKeys
+                    && $instruction->facts()['step'] === 'paste',
+            )) === 1,
+        );
     }
 
     /**

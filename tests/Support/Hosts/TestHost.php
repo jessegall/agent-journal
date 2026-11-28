@@ -79,8 +79,6 @@ final class TestHost
 
     private const string CLAUDE_RECORDED_TURNS = 'resources/recordings/claude-code/2.1.323/turns';
 
-    private const string CODEX_RECORDED_TURNS = 'resources/recordings/codex/0.165.0/turns';
-
     /**
      * How long the mock Docker daemon gets to open its socket.
      */
@@ -724,15 +722,6 @@ final class TestHost
     {
         $turns = base_path(self::CLAUDE_RECORDED_TURNS);
         copy("{$turns}/{$recording}/fixture.json", "{$this->installation()}/terminal-turn/fixture.json");
-
-        return $this;
-    }
-
-    public function playSessionLifeTerminals(): self
-    {
-        $this->playClaudeTerminal('terminal-turn');
-        $codex = base_path(self::CODEX_RECORDED_TURNS.'/terminal-turn/fixture.json');
-        copy($codex, "{$this->installation()}/codex-terminal-turn/fixture.json");
 
         return $this;
     }
