@@ -1,0 +1,45 @@
+{
+  "driver": "driver",
+  "driver_version": "sha256:7d7d51e53d069cd52799a85627138a5b1fa940609ea73e229a9d86056967569c",
+  "profile": "",
+  "mode": "process",
+  "geometry": {
+    "columns": 0,
+    "rows": 0
+  },
+  "recorded_at": "2026-11-28T14:17:37.107881+00:00",
+  "initial_state": {
+    "working_folder": "/workspace",
+    "arguments": [
+      "--",
+      "claude",
+      "auth",
+      "status",
+      "--json"
+    ],
+    "environment_names": [
+      "ANTHROPIC_CONFIG_DIR",
+      "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN",
+      "CLAUDE_CONFIG_DIR",
+      "HOME",
+      "JOURNAL_ACCOUNTS_ROOT",
+      "JOURNAL_START_REF",
+      "MCP_TIMEOUT",
+      "MCP_TOOL_TIMEOUT"
+    ]
+  },
+  "output": [
+    {
+      "offset": 1312097000,
+      "stream": "stdout",
+      "bytes": "ewogICJsb2dnZWRJbiI6IHRydWUsCiAgImF1dGhNZXRob2QiOiAiY2xhdWRlLmFpIiwKICAiYXBpUHJvdmlkZXIiOiAiZmlyc3RQYXJ0eSIsCiAgImFuYWx5dGljc0Rpc2FibGVkIjogZmFsc2UsCiAgInByb2plY3RzRGlyZWN0b3J5IjogIntlbnY6Q0xBVURFX0NPTkZJR19ESVJ9L3Byb2plY3RzIiwKICAiY29uZmlnRGlyZWN0b3J5IjogIntlbnY6Q0xBVURFX0NPTkZJR19ESVJ9IiwKICAibG9naW5FeHBpcmVzQXQiOiAiMjAyNi0xMi0yNlQyMDoyNTozNy4zNjFaIiwKICAiY29uc29sZVByb2ZpbGVTaWduSW5PZmZlcmVkIjogdHJ1ZSwKICAiZW1haWwiOiAidXNlckBleGFtcGxlLmNvbSIsCiAgIm9yZ0lkIjogIjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMSIsCiAgIm9yZ05hbWUiOiAiRXhhbXBsZSBPcmdhbml6YXRpb24iLAogICJzdWJzY3JpcHRpb25UeXBlIjogIm1heCIsCiAgInN0b3JlZENsYXVkZUFpTG9naW4iOiB0cnVlLAogICJwbGFuVGllciI6ICJtYXhfMjB4Igp9Cg=="
+    }
+  ],
+  "inputs": [],
+  "resizes": [],
+  "exit_code": 0,
+  "checkpoints": [],
+  "script_parameters": [],
+  "expected_keys": [],
+  "expected_transitions": []
+}
