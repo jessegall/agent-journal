@@ -13,7 +13,7 @@ use Tests\TestCase;
 /**
  * The agent-images service's script (.docker/agent-images/load.sh) run for real against a mock agent daemon: it
  * loads the saved archives only when a pinned image is missing, keeps the pinned images and those a container runs
- * on, and fails with a plain line when the pins are unset or an archive does not hold a pinned image.
+ * on, names the agent image by its id for the driver builds, and fails with a plain line when the pins are unset or an archive does not hold a pinned image.
  */
 #[OverTheWire]
 final class AgentImagesTest extends TestCase
@@ -58,6 +58,16 @@ final class AgentImagesTest extends TestCase
 
         $this->assertSame(0, $run->getExitCode(), $run->getErrorOutput());
         $this->assertSame([], $this->docker->callsHolding('load --quiet'));
+    }
+
+    public function test_the_agent_image_is_named_by_its_id_for_the_driver_builds(): void
+    {
+        $this->daemonHolds(self::AGENT, self::RUNNER);
+
+        $run = $this->load(self::AGENT, self::RUNNER);
+
+        $this->assertSame(0, $run->getExitCode(), $run->getErrorOutput());
+        $this->assertCount(1, $this->docker->callsHolding('image tag '.self::AGENT.' journal-agent-base:aaaa'));
     }
 
     public function test_a_missing_pin_loads_every_archive(): void

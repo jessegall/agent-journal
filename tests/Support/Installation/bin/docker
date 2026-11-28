@@ -137,6 +137,7 @@ answer_daemon_image() {
     shift
     case "$1" in
         ls) cat "$STAND_IN/daemon-images" ;;
+        tag) ;;
         rm) for image; do sed -i.before "\|^$image\$|d" "$STAND_IN/daemon-images"; done; rm -f "$STAND_IN/daemon-images.before" ;;
         inspect) inspect_daemon_images "$@" ;;
     esac

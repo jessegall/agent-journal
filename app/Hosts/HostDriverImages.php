@@ -40,7 +40,7 @@ final readonly class HostDriverImages implements HostDriverImagesContract
 
     public function imageFor(Host $host, DriverProfile $driver): HostDriverImage
     {
-        $recipe = $this->recipes->of($driver->image(), $this->base->reference);
+        $recipe = $this->recipes->of($driver->image(), $this->base->buildBase());
 
         return HostDriverImage::create($host, DriverImageRecipeRecord::create($recipe));
     }

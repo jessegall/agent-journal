@@ -12,6 +12,7 @@ main() {
     remove_unheld_images
     load_missing_images "$archives"
     check_loaded_images
+    name_agent_image
 }
 
 # An earlier build never fills the disk, and an agent at work keeps its image until its container is gone.
@@ -42,6 +43,11 @@ check_loaded_images() {
             exit 1
         fi
     done
+}
+
+# A driver image's build names its base by name, so the agent image is also held under the name its own id makes.
+name_agent_image() {
+    docker image tag "$AGENT_IMAGE" "journal-agent-base:${AGENT_IMAGE#sha256:}"
 }
 
 main "$@"
