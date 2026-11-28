@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Routes;
 
+use App\Web\Creation\WindowFactory;
+use Domain\Rules\Data\RulesPaneData;
+use Domain\Rules\Http\Windows\RulesWindowBuilder;
 use App\Web\Creation\PageFactory;
 use Domain\Rules\Http\Pages\RulesPageBuilder;
 use Domain\Rules\Http\Pages\RulesPageData;
@@ -30,6 +33,18 @@ final class ListGetTest extends GuardedRouteEntryTestCase
         $result = $factory->create(RulesPageData::class, Request::create('/rules?q=example'));
 
         $this->assertSame('rules', $result->layout()->root->key);
+    }
+
+    public function test_the_pane_builds_compact_rows_and_a_full_link(): void
+    {
+        $this->journal->owner();
+        $factory = new WindowFactory($this->app);
+        $factory->register(RulesPaneData::class, RulesWindowBuilder::class);
+
+        $pane = $factory->create(RulesPaneData::class, Request::create('/?q=example'));
+
+        $this->assertSame([], $pane->items);
+        $this->assertSame('/rules?q=example', $pane->fullUrl);
     }
 
     protected static function bootedDomains(): array

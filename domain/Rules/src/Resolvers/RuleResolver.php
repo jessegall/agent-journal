@@ -12,6 +12,8 @@ use Domain\Rules\Values\RuleFilters;
 use Domain\Rules\Values\RuleList;
 use Domain\Rules\Values\RuleView;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use PhpOption\None;
 use PhpOption\Option;
 
@@ -36,13 +38,7 @@ final readonly class RuleResolver implements RuleResolverContract
 
     public function list(RuleFilters $filters): RuleList
     {
-        $this->actors->actor();
-        $matching = Rule::query()->matching($filters->search);
-
-        if ($filters->status !== null) {
-            $matching->where('status', $filters->status);
-        }
-
+        $matching = $this->matching($filters);
         $total = (clone $matching)->count();
         $size = min(max(1, $filters->perPage), NumberedPage::LARGEST_SIZE);
         $lastPage = max(1, (int) ceil($total / $size));
@@ -58,6 +54,25 @@ final readonly class RuleResolver implements RuleResolverContract
             $selected->map(self::viewOf(...))->getOrElse(null),
             $filters->selectedRuleId !== null && $selected->isEmpty(),
         );
+    }
+
+    /** @return Collection<int, Rule> */
+    public function preview(RuleFilters $filters, int $limit): Collection
+    {
+        return $this->matching($filters)->orderByDesc('id')->limit($limit)->get(['id', 'number', 'text']);
+    }
+
+    /** @return Builder<Rule> */
+    private function matching(RuleFilters $filters): Builder
+    {
+        $this->actors->actor();
+        $matching = Rule::query()->matching($filters->search);
+
+        if ($filters->status !== null) {
+            $matching->where('status', $filters->status);
+        }
+
+        return $matching;
     }
 
     /**
