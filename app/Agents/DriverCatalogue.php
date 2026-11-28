@@ -16,6 +16,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverFamilyUnknown;
 use App\Exceptions\DriverUnknown;
+use App\Models\Agents\AgentRuntime;
 use App\Support\Registry;
 use App\Values\BoundTarget;
 use App\Values\DriverFamily;
@@ -101,7 +102,20 @@ final class DriverCatalogue implements DriverCatalogueContract
          */
         $capabilities = $this->container->make($registration->capabilities);
 
-        return new Driver($registration, $capabilities, $this->container->make(CommandBus::class));
+        return new Driver(
+            $registration,
+            $capabilities,
+            $this->container->make(CommandBus::class),
+            $this->handlingOf($registration),
+        );
+    }
+
+    /**
+     * @throws DriverUnknown
+     */
+    public function forRuntime(AgentRuntime $runtime): DriverContract
+    {
+        return $this->forKey(DriverKey::from($runtime->driver_key));
     }
 
     /**

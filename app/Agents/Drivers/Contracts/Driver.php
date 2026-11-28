@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Contracts;
 
+use App\Hosts\Contracts\HostProcessEndEvent;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Hosts\HostProcess;
 use App\Sessions\StartReceipt;
 use App\Values\BoundTarget;
 use App\Values\DriverRegistration;
@@ -35,4 +38,19 @@ interface Driver
      * Starts the agent again in the session it ran before, as the request asks.
      */
     public function resume(StartRequest $request): StartReceipt;
+
+    /**
+     * Opens the runtime's registered start, or leaves it for its host to claim.
+     */
+    public function openStart(AgentRuntime $runtime): void;
+
+    /**
+     * Opens what the runtime runs next once its start is proven: its terminal, its next turn, or nothing of its own.
+     */
+    public function continueAgent(AgentRuntime $runtime): void;
+
+    /**
+     * What the ended process means for the start it ran for: refused, stopped or left to go on.
+     */
+    public function endWith(HostProcess $process, HostProcessEndEvent $fact): void;
 }

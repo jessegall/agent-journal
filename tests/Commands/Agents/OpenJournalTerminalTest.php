@@ -6,6 +6,7 @@ namespace Tests\Commands\Agents;
 
 use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
 use App\Agents\Commands\OpenJournalTerminal\OpenJournalTerminalCommand;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Hosts\Enums\HostProcessPurpose;
@@ -58,6 +59,22 @@ final class OpenJournalTerminalTest extends TestCase
             ],
         );
         $this->journal->assertResult($terminal->id, $this->journal->hostProcessCalled('terminal')->id);
+    }
+
+    public function test_the_driver_continues_a_proven_terminal_runtime_with_its_one_terminal(): void
+    {
+        [$opened] = $this->provenTerminal();
+        $runtime = AgentRuntime::query()->whereKey($opened->runtimeId)->sole();
+
+        $this->journal->service(DriverCatalogue::class)->forRuntime($runtime)->continueAgent($runtime);
+
+        $this->journal->assertResult(
+            1,
+            HostProcess::query()
+                ->where('agent_runtime_id', $runtime->id)
+                ->where('purpose', HostProcessPurpose::AgentTerminal)
+                ->count(),
+        );
     }
 
     public function test_what_the_terminal_shows_reaches_the_terminal_page(): void

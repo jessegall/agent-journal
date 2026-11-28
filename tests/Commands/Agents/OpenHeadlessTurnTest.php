@@ -9,6 +9,7 @@ use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
 use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Agents\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
 use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Hosts\Enums\HostProcessPurpose;
@@ -174,6 +175,23 @@ final class OpenHeadlessTurnTest extends TestCase
                 $this->promptOf('second'),
             ],
         );
+    }
+
+    public function test_the_driver_continues_a_proven_runtime_whose_work_waits_by_opening_its_next_turn(): void
+    {
+        $opened = $this->runtimeOnItsFirstTurn();
+        $this->journal->asOwner(new DeliverAgentCommand(
+            $this->journal->agentCalled('Driven')->id,
+            $opened->sessionId,
+            'second',
+            [new MessageTextData('And then: pwd.')],
+        ));
+        $this->endFirstTurn($opened);
+        $runtime = AgentRuntime::query()->whereKey($opened->runtimeId)->sole();
+
+        $this->journal->service(DriverCatalogue::class)->forRuntime($runtime)->continueAgent($runtime);
+
+        $this->journal->assertResult(2, $this->turnCount($opened->runtimeId));
     }
 
     /**

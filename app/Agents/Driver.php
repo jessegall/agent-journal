@@ -7,9 +7,13 @@ namespace App\Agents;
 use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Drivers\Contracts\Driver as DriverContract;
 use App\Agents\Drivers\Contracts\DriverCapabilities;
+use App\Agents\Drivers\Contracts\RuntimeHandling;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Exceptions\DriverRequestMismatch;
 use App\Bus\Contracts\CommandBus;
+use App\Hosts\Contracts\HostProcessEndEvent;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Hosts\HostProcess;
 use App\Sessions\StartReceipt;
 use App\Values\BoundTarget;
 use App\Values\DriverRegistration;
@@ -26,6 +30,7 @@ final readonly class Driver implements DriverContract
         private DriverRegistration $registration,
         private DriverCapabilities $capabilities,
         private CommandBus $commands,
+        private RuntimeHandling $handling,
     ) {}
 
     public function descriptor(): DriverRegistration
@@ -70,5 +75,20 @@ final readonly class Driver implements DriverContract
                 "{$requested} {$request->driverType->value}",
             );
         }
+    }
+
+    public function openStart(AgentRuntime $runtime): void
+    {
+        $this->handling->openStart($runtime);
+    }
+
+    public function continueAgent(AgentRuntime $runtime): void
+    {
+        $this->handling->continueAgent($runtime);
+    }
+
+    public function endWith(HostProcess $process, HostProcessEndEvent $fact): void
+    {
+        $this->handling->endWith($process, $fact);
     }
 }

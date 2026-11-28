@@ -12,7 +12,6 @@ use App\Agents\SignInEgress;
 use App\Exceptions\DriverFamilyUnknown;
 use App\Files\Contracts\Files;
 use App\Models\Agents\AgentRuntime;
-use App\Values\DriverKey;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -63,7 +62,7 @@ final readonly class DriverProfiles
      */
     public function of(AgentRuntime $runtime): DriverProfile
     {
-        $driver = $this->drivers->forKey(DriverKey::from($runtime->driver_key));
+        $driver = $this->drivers->forRuntime($runtime);
 
         return $this->ofFamily($driver->descriptor()->family);
     }

@@ -7,6 +7,7 @@ namespace App\Agents\Drivers\Contracts;
 use App\Agents\Drivers\Enums\DriverCapability;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Exceptions\DriverFamilyUnknown;
+use App\Models\Agents\AgentRuntime;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;
 use App\Values\DriverRegistration;
@@ -22,6 +23,11 @@ interface DriverCatalogue
      * The driver registered under the key.
      */
     public function forKey(DriverKey $key): Driver;
+
+    /**
+     * The driver the runtime runs on.
+     */
+    public function forRuntime(AgentRuntime $runtime): Driver;
 
     /**
      * The key of the one driver registered for a family in a driver type, as a start form or the command line names it.
