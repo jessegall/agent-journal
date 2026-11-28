@@ -16,8 +16,7 @@ use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\GroupSnapshotRequired;
 use App\Settings\Exceptions\SettingStorageInvalid;
 use App\Settings\Exceptions\SettingUnavailable;
-use App\Settings\Storage\EncodedSetting;
-use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedEntry;
 use App\Settings\Values\Decimal;
 use App\Support\Storage\SettingsDocument;
 use BackedEnum;
@@ -76,10 +75,10 @@ final readonly class StoredSettings
         }
 
         $enabled = $this->document->toggle($group->key)
-            ->map(fn (EncodedToggle $toggle) => $this->codec->decodeToggle(
+            ->map(fn (EncodedEntry $toggle) => $this->codec->decodeToggle(
                 $this->owner,
                 $group,
-                $toggle->encodedToggle,
+                $toggle->value,
             ))
             ->getOrElse($group->isDefaultEnabled);
 
@@ -96,10 +95,10 @@ final readonly class StoredSettings
     public function string(StringSetting $setting): string
     {
         return $this->document->setting($setting->key)
-            ->map(fn (EncodedSetting $stored) => $this->codec->decodeString(
+            ->map(fn (EncodedEntry $stored) => $this->codec->decodeString(
                 $this->owner,
                 $setting,
-                $stored->encodedSetting,
+                $stored->value,
             ))
             ->getOrElse($setting->defaultValue);
     }
@@ -110,10 +109,10 @@ final readonly class StoredSettings
     public function boolean(BooleanSetting $setting): bool
     {
         return $this->document->setting($setting->key)
-            ->map(fn (EncodedSetting $stored) => $this->codec->decodeBoolean(
+            ->map(fn (EncodedEntry $stored) => $this->codec->decodeBoolean(
                 $this->owner,
                 $setting,
-                $stored->encodedSetting,
+                $stored->value,
             ))
             ->getOrElse($setting->isDefault);
     }
@@ -124,10 +123,10 @@ final readonly class StoredSettings
     public function integer(IntegerSetting $setting): int
     {
         return $this->document->setting($setting->key)
-            ->map(fn (EncodedSetting $stored) => $this->codec->decodeInteger(
+            ->map(fn (EncodedEntry $stored) => $this->codec->decodeInteger(
                 $this->owner,
                 $setting,
-                $stored->encodedSetting,
+                $stored->value,
             ))
             ->getOrElse($setting->defaultValue);
     }
@@ -138,10 +137,10 @@ final readonly class StoredSettings
     public function decimal(DecimalSetting $setting): Decimal
     {
         return $this->document->setting($setting->key)
-            ->map(fn (EncodedSetting $stored) => $this->codec->decodeDecimal(
+            ->map(fn (EncodedEntry $stored) => $this->codec->decodeDecimal(
                 $this->owner,
                 $setting,
-                $stored->encodedSetting,
+                $stored->value,
             ))
             ->getOrElse($setting->defaultValue);
     }
@@ -157,10 +156,10 @@ final readonly class StoredSettings
     public function choice(ChoiceSetting $setting): string|int
     {
         return $this->document->setting($setting->key)
-            ->map(fn (EncodedSetting $stored) => $this->codec->decodeChoice(
+            ->map(fn (EncodedEntry $stored) => $this->codec->decodeChoice(
                 $this->owner,
                 $setting,
-                $stored->encodedSetting,
+                $stored->value,
             ))
             ->getOrElse($setting->defaultValue);
     }
@@ -176,10 +175,10 @@ final readonly class StoredSettings
     public function enum(EnumSetting $setting): BackedEnum
     {
         return $this->document->setting($setting->key)
-            ->map(fn (EncodedSetting $stored) => $this->codec->decodeEnum(
+            ->map(fn (EncodedEntry $stored) => $this->codec->decodeEnum(
                 $this->owner,
                 $setting,
-                $stored->encodedSetting,
+                $stored->value,
             ))
             ->getOrElse($setting->defaultValue);
     }

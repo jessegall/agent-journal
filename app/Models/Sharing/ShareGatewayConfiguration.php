@@ -130,7 +130,7 @@ final class ShareGatewayConfiguration extends JournalModel implements EventSourc
         return Share::findUnendedOf($this->id);
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     /**
      * The public address a share's token opens under this configuration.

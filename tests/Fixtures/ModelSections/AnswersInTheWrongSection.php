@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * A model whose Predicates section holds an answer that is no yes or no, whose Transformers section holds one, and
- * whose Calculations section holds an answer that gives an object.
+ * whose Answers section holds an answer that gives an object.
  */
 final class AnswersInTheWrongSection extends Model
 {
@@ -26,7 +26,7 @@ final class AnswersInTheWrongSection extends Model
         return true;
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     /**
      * @return list<string>

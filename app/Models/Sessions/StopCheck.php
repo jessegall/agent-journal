@@ -201,7 +201,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
         return $this->certified_at !== null;
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     /**
      * The attempt's outcome: the same for two attempts that settled alike, with the same failures under the same

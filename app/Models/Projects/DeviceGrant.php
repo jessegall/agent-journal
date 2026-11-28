@@ -184,7 +184,7 @@ final class DeviceGrant extends JournalModel implements EventSource, ReadableMod
         return ! CarbonImmutable::now()->lessThan($this->code_expires_at);
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     /**
      * Where the request stands for the owner at this server time: pending, approved and awaiting collection, issued,

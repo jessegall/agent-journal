@@ -127,7 +127,7 @@ final class ShareGatewayEndpoint extends JournalModel implements EventSource, Re
         return $this->endpoint_version === $version;
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     /**
      * The key of the gateway this endpoint's configuration uses.

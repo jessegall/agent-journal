@@ -528,7 +528,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         return $this->loadMissing('host')->host->arrangement->isContained();
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     /**
      * How many live terminal views watch the runtime, counted once with the runtime when it was read with its watchers.

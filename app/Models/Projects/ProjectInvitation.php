@@ -117,7 +117,7 @@ final class ProjectInvitation extends JournalModel implements EventSource, Reada
         return $this->revoked_at === null && $this->spent_at === null && $this->expires_at->isAfter($now);
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     /**
      * The id of the install attempt this line belongs to; reading it on a line issued before attempts existed, which

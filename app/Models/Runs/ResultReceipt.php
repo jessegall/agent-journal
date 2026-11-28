@@ -116,7 +116,7 @@ final class ResultReceipt extends JournalModel implements EventSource, ProjectOw
         return new PublishedResult($this->id, $this->process_run_id, $this->operation(), $this->outcome, $publishedAt);
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     /**
      * The canonical operation of the part this receipt is the result of.

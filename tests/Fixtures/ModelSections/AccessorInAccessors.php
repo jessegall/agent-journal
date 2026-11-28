@@ -29,7 +29,7 @@ final class AccessorInAccessors extends Model
         return [1];
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     public function stepAt(int $index): int
     {

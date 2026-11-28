@@ -9,8 +9,7 @@ use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\SettingsResolver;
 use App\Settings\Enums\SettingsOutcome;
 use App\Settings\Exceptions\SettingStorageInvalid;
-use App\Settings\Storage\EncodedSetting;
-use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedEntry;
 use App\Settings\Storage\EncodedValue;
 use App\Settings\Values\SettingsChange;
 use App\Support\Storage\SettingsDocument;
@@ -50,8 +49,8 @@ final class ResetSettingGroupTest extends TestCase
     public function test_resetting_an_invalid_switch_makes_the_group_follow_its_default_with_its_settings_intact(): void
     {
         $this->storeDirectly(fn (SettingsDocument $document) => $document
-            ->withToggle(new EncodedToggle('review', EncodedValue::of('on')))
-            ->withSetting(new EncodedSetting('retry_limit', EncodedValue::of(6))));
+            ->withToggle(new EncodedEntry('review', EncodedValue::of('on')))
+            ->withSetting(new EncodedEntry('retry_limit', EncodedValue::of(6))));
 
         $this->assertRefused(SettingStorageInvalid::class, $this->commands->integer($this->reviews->retryLimit, 4, 1));
 

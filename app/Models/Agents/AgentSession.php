@@ -322,7 +322,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         return array_values(array_filter($profile->requiredSkills(), $this->hasSkill(...)));
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     /**
      * The driver image the session froze, which its starts and resumes run.

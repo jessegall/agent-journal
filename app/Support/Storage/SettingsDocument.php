@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Storage;
 
-use App\Settings\Storage\EncodedSetting;
-use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedEntry;
 use App\Settings\Storage\EncodedValue;
 use JsonSerializable;
 use PhpOption\Option;
@@ -19,8 +18,8 @@ final readonly class SettingsDocument implements JsonSerializable
     public const int MOST_BYTES = 512 * 1024;
 
     /**
-     * @param  array<string, EncodedSetting>  $settings  by local key
-     * @param  array<string, EncodedToggle>  $toggles  by local key
+     * @param  array<string, EncodedEntry>  $settings  by local key
+     * @param  array<string, EncodedEntry>  $toggles  by local key
      */
     public function __construct(private array $settings, private array $toggles) {}
 
@@ -30,7 +29,7 @@ final readonly class SettingsDocument implements JsonSerializable
     }
 
     /**
-     * @return Option<EncodedSetting>
+     * @return Option<EncodedEntry>
      */
     public function setting(string $key): Option
     {
@@ -38,7 +37,7 @@ final readonly class SettingsDocument implements JsonSerializable
     }
 
     /**
-     * @return Option<EncodedToggle>
+     * @return Option<EncodedEntry>
      */
     public function toggle(string $key): Option
     {
@@ -48,7 +47,7 @@ final readonly class SettingsDocument implements JsonSerializable
     /**
      * The document with this entry stored in place of the one with its key, or added at the end.
      */
-    public function withSetting(EncodedSetting $setting): self
+    public function withSetting(EncodedEntry $setting): self
     {
         return new self([...$this->settings, $setting->key => $setting], $this->toggles);
     }
@@ -61,7 +60,7 @@ final readonly class SettingsDocument implements JsonSerializable
     /**
      * The document with this entry stored in place of the one with its key, or added at the end.
      */
-    public function withToggle(EncodedToggle $toggle): self
+    public function withToggle(EncodedEntry $toggle): self
     {
         return new self($this->settings, [...$this->toggles, $toggle->key => $toggle]);
     }
@@ -77,7 +76,7 @@ final readonly class SettingsDocument implements JsonSerializable
     }
 
     /**
-     * @return array{settings: list<EncodedSetting>, toggles: list<EncodedToggle>}
+     * @return array{settings: list<EncodedEntry>, toggles: list<EncodedEntry>}
      */
     public function jsonSerialize(): array
     {

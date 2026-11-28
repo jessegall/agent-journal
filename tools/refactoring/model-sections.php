@@ -34,7 +34,7 @@ require_once __DIR__.'/php-parse.php';
 const BY_LOOKS = [
     'Predicates',
     'Transformers',
-    'Calculations',
+    'Answers',
     'Accessors',
     'Asserts',
 ];
@@ -44,7 +44,7 @@ const SECTIONS = [
     'Mutations',
     'Predicates',
     'Transformers',
-    'Calculations',
+    'Answers',
     'Accessors',
     'Relations',
     'Asserts',
@@ -165,7 +165,7 @@ function sectionOf(ClassMethod $method, string $body): string
         $method->isStatic() => 'Queries',
         in_array($returns, ['void', 'never'], true) || preg_match(ROW_WRITES, $body) === 1 => 'Mutations',
         returnsBool($method) => 'Predicates',
-        returnsScalar($method) => 'Calculations',
+        returnsScalar($method) => 'Answers',
         default => 'Transformers',
     };
 }
@@ -465,8 +465,8 @@ function lookFaultOf(ClassMethod $method, string $section): string|null
         return "method {$name} gives no object, so it does not belong in Transformers";
     }
 
-    if ($section === 'Calculations' && (! $isRowAnswer || ! returnsScalar($method))) {
-        return "method {$name} gives no string, int or float, so it does not belong in Calculations";
+    if ($section === 'Answers' && (! $isRowAnswer || ! returnsScalar($method))) {
+        return "method {$name} gives no string, int or float, so it does not belong in Answers";
     }
 
     return null;

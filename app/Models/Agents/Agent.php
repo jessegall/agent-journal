@@ -174,7 +174,7 @@ final class Agent extends JournalModel implements
         return Some::create(new RunningRuntime($target, $this->runtime_generation));
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     public function actorType(): string
     {

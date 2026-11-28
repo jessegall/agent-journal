@@ -7,7 +7,7 @@ namespace Tests\Commands\Settings;
 use App\Models\Records\SettingsRecord;
 use App\Settings\Commands\ResetSetting\ResetSettingCommand;
 use App\Settings\Enums\SettingsOutcome;
-use App\Settings\Storage\EncodedSetting;
+use App\Settings\Storage\EncodedEntry;
 use App\Settings\Storage\EncodedValue;
 use App\Settings\Values\SettingsChange;
 use App\Support\Storage\SettingsDocument;
@@ -48,10 +48,10 @@ final class ResetSettingTest extends TestCase
     public function test_resetting_one_invalid_override_removes_only_it_and_keeps_its_siblings_byte_for_byte(): void
     {
         $this->storeDirectly(fn (SettingsDocument $document) => $document
-            ->withSetting(new EncodedSetting('retry_limit', EncodedValue::of('not a number')))
-            ->withSetting(new EncodedSetting('weight', EncodedValue::of('0.75')))
-            ->withSetting(new EncodedSetting('summary_style', EncodedValue::of([1, 2])))
-            ->withSetting(new EncodedSetting('retired_key', EncodedValue::of(true))));
+            ->withSetting(new EncodedEntry('retry_limit', EncodedValue::of('not a number')))
+            ->withSetting(new EncodedEntry('weight', EncodedValue::of('0.75')))
+            ->withSetting(new EncodedEntry('summary_style', EncodedValue::of([1, 2])))
+            ->withSetting(new EncodedEntry('retired_key', EncodedValue::of(true))));
 
         $before = $this->storedText();
 

@@ -357,7 +357,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
         );
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     /**
      * The key of the gateway the share is served under; none for a proposal, which has no gateway yet.

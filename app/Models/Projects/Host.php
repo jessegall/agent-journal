@@ -448,7 +448,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         return ExecutablePlace::Host;
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     public function expectedProtocol(): int
     {

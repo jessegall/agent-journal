@@ -255,7 +255,7 @@ final class HostDriverImage extends JournalModel implements EventSource, Readabl
         return $this->status === DriverImageStatus::Pending;
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     /**
      * The image the build gave, which every row past its build holds.

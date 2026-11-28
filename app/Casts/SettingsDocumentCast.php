@@ -7,8 +7,7 @@ namespace App\Casts;
 use App\Attributes\Rules\DecodesAnyJson;
 use App\Settings\Exceptions\SettingsDocumentInvalid;
 use App\Settings\SettingKey;
-use App\Settings\Storage\EncodedSetting;
-use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedEntry;
 use App\Settings\Storage\EncodedValue;
 use App\Support\Storage\SettingsDocument;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
@@ -54,11 +53,11 @@ final class SettingsDocumentCast implements CastsAttributes
 
         return new SettingsDocument(
             array_map(
-                fn (array $entry) => new EncodedSetting($entry['key'], $entry['value']),
+                fn (array $entry) => new EncodedEntry($entry['key'], $entry['value']),
                 $this->entries($owner, 'settings', $envelope->settings),
             ),
             array_map(
-                fn (array $entry) => new EncodedToggle($entry['key'], $entry['value']),
+                fn (array $entry) => new EncodedEntry($entry['key'], $entry['value']),
                 $this->entries($owner, 'toggles', $envelope->toggles),
             ),
         );

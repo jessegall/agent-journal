@@ -179,7 +179,7 @@ class User extends Authenticatable implements
         return AssigneeIdentity::of($this);
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     public function actorType(): string
     {

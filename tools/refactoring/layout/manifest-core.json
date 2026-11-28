@@ -92285,10 +92285,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "61c097c2710ce6ca02666df5b23650009fc48ad2",
-        "old_path": "app/Settings/Storage/EncodedSetting.php",
-        "old_class": "App\\Settings\\Storage\\EncodedSetting",
-        "final_path": "app/Settings/Storage/EncodedSetting.php",
-        "final_class": "App\\Settings\\Storage\\EncodedSetting",
+        "old_path": "app/Settings/Storage/EncodedEntry.php",
+        "old_class": "App\\Settings\\Storage\\EncodedEntry",
+        "final_path": "app/Settings/Storage/EncodedEntry.php",
+        "final_class": "App\\Settings\\Storage\\EncodedEntry",
         "status": "stay",
         "kind": "class",
         "generator": {

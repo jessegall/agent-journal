@@ -471,7 +471,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
         return in_array($this->status, [AccountStatus::Removing, AccountStatus::Removed], true);
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     /**
      * The folder a start runs the driver's sign-in from; reading it on a removed account, which has none, fails.

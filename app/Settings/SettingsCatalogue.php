@@ -22,8 +22,7 @@ use App\Settings\Enums\SettingAvailability;
 use App\Settings\Enums\SettingSource;
 use App\Settings\Exceptions\SettingsOwnerUnknown;
 use App\Settings\Exceptions\SettingStorageInvalid;
-use App\Settings\Storage\EncodedSetting;
-use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedEntry;
 use App\Support\Storage\SettingsDocument;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
@@ -116,7 +115,7 @@ final readonly class SettingsCatalogue implements SettingsCatalogueContract
     {
         try {
             $enabled = $document->toggle($group->key)
-                ->map(fn (EncodedToggle $toggle) => $this->codec->decodeToggle($owner, $group, $toggle->encodedToggle))
+                ->map(fn (EncodedEntry $toggle) => $this->codec->decodeToggle($owner, $group, $toggle->value))
                 ->getOrElse($group->isDefaultEnabled);
         } catch (SettingStorageInvalid) {
             return GroupAvailability::Invalid;
@@ -151,7 +150,7 @@ final readonly class SettingsCatalogue implements SettingsCatalogueContract
             'default' => $setting->catalogueValue($setting->isEnabledByDefault()),
             'constraints' => $setting->catalogueConstraints(),
             'configured' => $stored->map(
-                fn (EncodedSetting $entry) => $this->configured($owner, $setting, $entry),
+                fn (EncodedEntry $entry) => $this->configured($owner, $setting, $entry),
             )->getOrCall(Optional::create(...)),
         ]);
     }
@@ -159,10 +158,10 @@ final readonly class SettingsCatalogue implements SettingsCatalogueContract
     /**
      * The stored value when the setting accepts it, otherwise a marker that names nothing of what was stored.
      */
-    private function configured(string $owner, Setting $setting, EncodedSetting $entry): CatalogueValue
+    private function configured(string $owner, Setting $setting, EncodedEntry $entry): CatalogueValue
     {
         try {
-            return $setting->catalogueValue($setting->valueDecodedBy($this->codec, $owner, $entry->encodedSetting));
+            return $setting->catalogueValue($setting->valueDecodedBy($this->codec, $owner, $entry->value));
         } catch (SettingStorageInvalid) {
             return InvalidValueData::from([]);
         }

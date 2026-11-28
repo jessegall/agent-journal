@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Access\CommandAdmission;
+use App\Access\CommandAdmissions;
 use App\Access\Contracts\AuthorizerProviderRegistration;
 use App\Access\Contracts\CurrentAuthorizer;
 use App\Access\Contracts\OperationNames as OperationNamesContract;
@@ -75,7 +75,7 @@ final class ProfilesServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->app->bind(CommandAdmissionContract::class, CommandAdmission::class);
+        $this->app->bind(CommandAdmissionContract::class, CommandAdmissions::class);
         $this->app->bind(ReadAdmissionContract::class, ReadAdmission::class);
         $this->app->scoped(CommandPermissionResolverContract::class, CommandPermissionResolver::class);
         $this->app->scoped(OperationPolicyContract::class, OperationPolicy::class);

@@ -85,7 +85,7 @@ final class SupervisorLink extends JournalModel implements EventSource, Readable
         $this->raise(new SupervisorLinkChanged($this->id));
     }
 
-    // ----------[ Calculations ]----------
+    // ----------[ Answers ]----------
 
     public function versionFor(AskTypeKey|null $type): int
     {

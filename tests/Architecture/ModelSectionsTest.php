@@ -27,7 +27,7 @@ final class ModelSectionsTest extends TestCase
         .'Transformers';
 
     private const string OBJECT_IN_CALCULATIONS = 'method words gives no string, int or float, so it does not belong'
-        .' in Calculations';
+        .' in Answers';
 
     private const string PLAIN_METHOD_IN_ACCESSORS = 'method isDone is no accessor, so it does not belong in Accessors';
 

@@ -16,8 +16,7 @@ use App\Settings\Enums\SettingTarget;
 use App\Settings\Exceptions\SettingDisabled;
 use App\Settings\Exceptions\SettingsConflict;
 use App\Settings\Exceptions\SettingStorageInvalid;
-use App\Settings\Storage\EncodedSetting;
-use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedEntry;
 use App\Settings\Storage\EncodedValue;
 use App\Settings\Values\SettingsChange;
 use App\Support\Storage\SettingsDocument;
@@ -55,14 +54,14 @@ final readonly class SettingsWriter
 
         if ($record->document
             ->setting($setting->key())
-            ->filter(fn (EncodedSetting $stored) => $stored->encodedSetting->equals($encodedSetting))
+            ->filter(fn (EncodedEntry $stored) => $stored->value->equals($encodedSetting))
             ->isDefined()) {
             return $this->unchanged($record);
         }
 
         return $this->revise(
             $record,
-            $record->document->withSetting(new EncodedSetting($setting->key(), $encodedSetting)),
+            $record->document->withSetting(new EncodedEntry($setting->key(), $encodedSetting)),
             SettingTarget::Setting,
             $setting->key(),
         );
@@ -109,14 +108,14 @@ final readonly class SettingsWriter
 
         if ($record->document
             ->toggle($group->key)
-            ->filter(fn (EncodedToggle $stored) => $stored->encodedToggle->equals($encodedToggle))
+            ->filter(fn (EncodedEntry $stored) => $stored->value->equals($encodedToggle))
             ->isDefined()) {
             return $this->unchanged($record);
         }
 
         return $this->revise(
             $record,
-            $record->document->withToggle(new EncodedToggle($group->key, $encodedToggle)),
+            $record->document->withToggle(new EncodedEntry($group->key, $encodedToggle)),
             SettingTarget::Group,
             $group->key,
         );

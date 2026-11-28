@@ -18,7 +18,7 @@ use App\Models\Agents\AgentStackRow;
 use App\Models\Records\SettingsRecord;
 use App\Sessions\Enums\TransportProfileType;
 use App\Sessions\States\Support\SessionStateLifecycle;
-use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedEntry;
 use App\Settings\Storage\EncodedValue;
 use App\Stacks\AgentStack;
 use App\Stacks\AgentStacks;
@@ -312,7 +312,7 @@ final class AgentStacksTest extends TestCase
     {
         SettingsRecord::create('Core');
         $core = SettingsRecord::findSharedRuntimeForOwner('Core')->get();
-        $core->revise($core->document->withToggle(new EncodedToggle('domain_plans', EncodedValue::of(false))));
+        $core->revise($core->document->withToggle(new EncodedEntry('domain_plans', EncodedValue::of(false))));
         $this->createStack();
 
         $this->transaction()->run(

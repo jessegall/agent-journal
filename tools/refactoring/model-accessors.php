@@ -247,7 +247,7 @@ function belongsInAccessor(string $source, string $class, Class_ $model, ClassMe
         && $method->params === []
         && givesAccessorValue($source, $returned)
         && ! str_starts_with($method->name->toString(), '__')
-        && in_array(sectionOf($method, $body), ['Calculations', 'Transformers'], true)
+        && in_array(sectionOf($method, $body), ['Answers', 'Transformers'], true)
         && preg_match(SIDE_EFFECTS, $body) !== 1
         && ! readsRows($source, $class, $model, $method, [])
         && ! str_contains((string) $method->getDocComment()?->getText(), '@throws')

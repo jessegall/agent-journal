@@ -18,7 +18,7 @@ use App\Sessions\States\Support\SessionStateLifecycle;
 use App\Settings\CoreSettings;
 use App\Settings\SettingCommands;
 use App\Settings\SettingRegistry;
-use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedEntry;
 use App\Settings\Storage\EncodedValue;
 use App\Stacks\AgentStacks;
 use App\Stacks\Decisions\StateReferenceKeys;
@@ -133,7 +133,7 @@ final class ConditionalStatePushTest extends TestCase
 
         SettingsRecord::create('Reviews');
         $record = SettingsRecord::findSharedRuntimeForOwner('Reviews')->get();
-        $record->revise($record->document->withToggle(new EncodedToggle('review', EncodedValue::of(false))));
+        $record->revise($record->document->withToggle(new EncodedEntry('review', EncodedValue::of(false))));
 
         $sameRequest = $this->builtReview();
         $this->assertInstanceOf(ReviewState::class, $sameRequest);
