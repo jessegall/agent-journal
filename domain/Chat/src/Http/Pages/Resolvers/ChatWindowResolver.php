@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Pages\Resolvers;
 
+use App\Accounts\Contracts\StartAccounts;
+use App\Accounts\NoAccountsYet;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\PrivateRecordMissing;
 use App\Exceptions\StackTargetRefused;
@@ -15,6 +17,8 @@ use App\Navigation\Contracts\SlotSections;
 use App\Sessions\Contracts\AgentDirectory;
 use App\Support\ActorReference;
 use App\Support\AgentOption;
+use App\Support\Layout\LayoutActionData;
+use App\Support\Layout\LayoutPartData;
 use Domain\Chat\Data\AgentOptionData;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ChatSummaryData;
@@ -44,6 +48,7 @@ final readonly class ChatWindowResolver implements PageResolver
         private PairChats $chats,
         private SlotSections $slots,
         private AgentListing $listing,
+        private StartAccounts $startAccounts,
     ) {}
 
     public function read(): ChatData
@@ -69,6 +74,7 @@ final readonly class ChatWindowResolver implements PageResolver
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->chatList(),
             'beside' => $this->besideOf($chosen),
+            'noAccounts' => $this->noAccounts(),
         ]);
     }
 
@@ -115,7 +121,22 @@ final readonly class ChatWindowResolver implements PageResolver
             'conversation' => $this->pages->pageFor(null, $inbox, $this->request->dockToken()),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->chatList(),
+            'noAccounts' => $this->noAccounts(),
         ]);
+    }
+
+    /**
+     * The No accounts yet state while no account is signed in, its action opening the account wizard.
+     */
+    private function noAccounts(): LayoutPartData|Optional
+    {
+        if ($this->startAccounts->hasSignedInAccount()) {
+            return Optional::create();
+        }
+
+        $wizard = LayoutActionData::to(route('accounts.accounts', ['add' => '1'], false));
+
+        return NoAccountsYet::addingWith($wizard)->page();
     }
 
     /**

@@ -351,17 +351,22 @@ function readPage(wanted: string[], ended: (end: PageReadEnd) => void): void {
 const reads = new PageReadScheduler(readPage, (only) => only.forEach((name) => staleProps.add(name)));
 
 /**
- * A reload the Inertia live client started: a GET partial reload that names only live props of the page, and is no
- * loader call and no first load of deferred props.
+ * A reload the Inertia live client started: a GET partial reload that names only live props of the page, some of
+ * which the page holds, and is no loader call and no first load of deferred props. A read of props the page does not
+ * hold yet, such as a window asking for its own prop when it opens, is never one: the page read reads only held props.
  */
 function isLiveVisit(visit: PendingVisit): boolean {
-    const live = new Set(Object.keys(usePage().liveProps ?? {}));
+    const page = usePage();
+    const live = new Set(Object.keys(page.liveProps ?? {}));
+    // Inertia sets the flag on the visit it sends for deferred props, though its PendingVisit type does not name it.
+    const loadsDeferredProps = 'deferredProps' in visit && visit.deferredProps === true;
 
     return visit.method === 'get'
         && visit.only.length > 0
         && !(LOADER_HEADER in visit.headers)
-        && !visit.deferredProps
-        && visit.only.every((prop) => live.has(prop));
+        && !loadsDeferredProps
+        && visit.only.every((prop) => live.has(prop))
+        && visit.only.some((prop) => page.props[prop] !== undefined);
 }
 
 /**

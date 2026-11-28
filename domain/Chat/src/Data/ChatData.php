@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Data;
 
 use App\Navigation\Data\Pages\SlotSectionData;
+use App\Support\Layout\LayoutPartData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -42,5 +43,7 @@ final class ChatData extends Data
         // The chats shown beside the chosen one, side by side, each with its own agent.
         #[DataCollectionOf(ConversationData::class)]
         public readonly array $beside = [],
+        // The No accounts yet state, shown in place of the conversation while no account is signed in.
+        public readonly LayoutPartData|Optional $noAccounts = new Optional(),
     ) {}
 }

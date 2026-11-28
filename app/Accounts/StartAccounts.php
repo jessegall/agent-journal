@@ -66,4 +66,9 @@ final readonly class StartAccounts implements StartAccountsContract
 
         return array_values(array_unique($families));
     }
+
+    public function hasSignedInAccount(): bool
+    {
+        return Account::existsSignedIn();
+    }
 }

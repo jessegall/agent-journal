@@ -10,6 +10,7 @@ const purgers: Array<() => void> = [];
 const reads: Array<Record<string, unknown>> = [];
 
 vi.mock("@inertiajs/vue3", () => ({
+  Link: { props: ["href"], template: '<a :href="href"><slot /></a>' },
   usePage: () => ({ props: { viewer: { type: "owner", id: "user-1", canShare: true }, drivers: [] } }),
   router: {
     on: vi.fn(),
@@ -133,6 +134,35 @@ function runningLine(line: string, changedAt: string): RunningCommandData {
   return { agentId: "agent-1", line, isRunning: true, changedAt };
 }
 
+// The state the chat window sends while no account is signed in, as NoAccountsYet builds it.
+function noAccountsYet(): LayoutPartData {
+  const part = (fields: Partial<LayoutPartData>): LayoutPartData =>
+    ({ size: null, text: null, detail: null, rows: [], children: [], tabs: [], ...fields }) as LayoutPartData;
+
+  return part({
+    tag: "box",
+    key: "empty-page",
+    style: "page-empty",
+    children: [
+      part({ tag: "text", key: "icon", style: "icon", text: "account" }),
+      part({
+        tag: "notice",
+        key: "empty",
+        style: "first",
+        text: "No accounts yet",
+        detail: "Agents run on an account. Add a Claude Code or Codex account so they can start work.",
+      }),
+      part({
+        tag: "action",
+        key: "add",
+        style: "primary",
+        text: "Add account",
+        action: { href: "/accounts?add=1" },
+      } as Partial<LayoutPartData>),
+    ],
+  });
+}
+
 // A pane left mounted would answer the next test's reveal too.
 enableAutoUnmount(afterEach);
 
@@ -226,5 +256,34 @@ describe("ChatPane", () => {
 
     expect(pane.find("[data-running-line]").exists()).toBe(false);
     expect(pane.get("[data-running-idle]").text()).toBe("thinking");
+  });
+  it("shows No accounts yet with the account wizard in place of the conversation while no account is signed in", async () => {
+    revealedProps.value = new Set(["window_chat_conversation"]);
+    const pane = mount(ChatPane, {
+      props: {
+        chat: { ...chatWith("conversation-1"), noAccounts: noAccountsYet() } as ChatData,
+        offersChoice: false,
+        agentUrl: () => "/chat",
+        questionUrl: () => "/chat?question=1",
+        loadMore: () => undefined,
+        protectedProp: "window_chat_conversation",
+      },
+    });
+    await flushPromises();
+
+    const region = pane.get('[aria-label="No accounts yet"]');
+    expect(region.text()).toContain("Agents run on an account.");
+    expect(region.text()).toContain("Add account");
+    expect(region.find('a[href="/accounts?add=1"]').exists()).toBe(true);
+    expect(pane.find('[aria-label="Composer"]').exists()).toBe(false);
+  });
+
+  it("shows the conversation and no such state once an account is signed in", async () => {
+    revealedProps.value = new Set(["window_chat_conversation"]);
+    const pane = mountPane();
+    await flushPromises();
+
+    expect(pane.find('[aria-label="No accounts yet"]').exists()).toBe(false);
+    expect(pane.find('[aria-label="Composer"]').exists()).toBe(true);
   });
 });

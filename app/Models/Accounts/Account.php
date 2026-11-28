@@ -751,6 +751,14 @@ final class Account extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
+     * Whether any account of the journal is signed in, so an agent can start on it.
+     */
+    public static function existsSignedIn(): bool
+    {
+        return self::query()->signedIn()->exists();
+    }
+
+    /**
      * The owner's accounts that are not removed, by driver and name.
      *
      * @return list<self>
@@ -904,6 +912,17 @@ final class Account extends JournalModel implements EventSource, ReadableModel
     protected function withLabel(Builder $query, AccountLabel $label): void
     {
         $query->where('label_key', $label->key());
+    }
+
+    /**
+     * The accounts signed in now.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function signedIn(Builder $query): void
+    {
+        $query->where('status', AccountStatus::Authenticated->value);
     }
 
     /**
