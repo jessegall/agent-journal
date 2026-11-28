@@ -14,7 +14,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 20, reason: 'It reads every PHP file of app and the domains.')]
 final class AgentTextKeyTest extends TestCase
 {
-    private const string USE = '/AgentText::of\(\s*([^\s,)]+)/';
+    private const string USE = '/(?:AgentText::of\(\s*|Decision::deny\(\s*(?=[\'"]))([^\s,)]+)/';
 
     public function test_every_key_asked_for_is_registered(): void
     {

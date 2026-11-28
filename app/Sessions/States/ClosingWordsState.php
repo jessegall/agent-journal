@@ -14,7 +14,6 @@ use App\Stacks\Contracts\Work\BaseState;
 use App\Support\Command;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
-use App\Values\AgentText;
 use Generator;
 
 /**
@@ -48,7 +47,7 @@ final class ClosingWordsState extends AgentState implements BaseState
         if (! $turn->hasOffered($stop->closingWords)) {
             yield new OfferClosingWordsCommand($this->agentId, $this->sessionId, $stop->turnId, $stop->closingWords);
 
-            yield Decision::deny(AgentText::of('core.messages.closing_words_offer'));
+            yield Decision::deny('core.messages.closing_words_offer');
 
             return;
         }

@@ -10,7 +10,6 @@ use App\Hooks\Contracts\HookDecider;
 use App\Stacks\AgentStack;
 use App\Stacks\HookAnswer;
 use App\Support\Decisions\Decision;
-use App\Values\AgentText;
 
 /**
  * What the journal's contract with one driver covers: the reply schema it was written against, the hooks it maps and
@@ -40,7 +39,7 @@ final readonly class DriverCapabilities implements HookDecider
             return $answer;
         }
 
-        return $answer->replacedBy($this, Decision::deny(AgentText::of('core.drivers.rewrite_refused')), $stackBefore);
+        return $answer->replacedBy($this, Decision::deny('core.drivers.rewrite_refused'), $stackBefore);
     }
 
     public function supports(string $hookMethod): bool

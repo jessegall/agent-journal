@@ -38,9 +38,9 @@ final readonly class Decision implements AnswerPart
         return new self(SimpleAnswer::Delegate);
     }
 
-    public static function deny(AgentText $reason): self
+    public static function deny(AgentText|string $reason): self
     {
-        return new self(new Denied(new Reason($reason)));
+        return new self(new Denied(new Reason(AgentText::ofKeyOrText($reason))));
     }
 
     public static function rewrite(string $line): self

@@ -166,7 +166,7 @@ final class ProfileState extends AgentState implements BaseState
                 new CertifyStopCheckCommand($this->agentId, $this->sessionId, $stop->hookId),
             ],
             StopCheckStatus::Failed => $this->refuseOrHold($attempt, $stopOutcome->failureSummary()),
-            StopCheckStatus::Unresolved => [Decision::deny(AgentText::of('core.stop.checks_unresolved'))],
+            StopCheckStatus::Unresolved => [Decision::deny('core.stop.checks_unresolved')],
         };
     }
 

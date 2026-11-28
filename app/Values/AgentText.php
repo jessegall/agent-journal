@@ -27,4 +27,16 @@ final readonly class AgentText
     {
         return new self($key, $values);
     }
+
+    /**
+     * The text itself, or the text registered under a key with no values; the key is checked where it is written.
+     */
+    public static function ofKeyOrText(self|string $text): self
+    {
+        if (is_string($text)) {
+            return new self($text, []);
+        }
+
+        return $text;
+    }
 }

@@ -26,10 +26,19 @@ final class DecisionTest extends TestCase
 
     public function test_a_denial_carries_its_reason(): void
     {
-        $denied = Decision::deny(TestText::of(self::REASON))->answer;
+        $reason = TestText::of(self::REASON);
+        $denied = Decision::deny($reason)->answer;
 
         $this->assertInstanceOf(Denied::class, $denied);
-        $this->assertEquals(TestText::of(self::REASON), $denied->reason()->text);
+        $this->assertSame($reason, $denied->reason()->text);
+    }
+
+    public function test_a_registered_text_key_becomes_the_denial_reason(): void
+    {
+        $decision = Decision::deny('core.messages.closing_words_offer');
+
+        $this->assertSame('core.messages.closing_words_offer', $decision->refusalReason()->key);
+        $this->assertSame([], $decision->refusalReason()->values);
     }
 
     public function test_a_rewrite_has_no_refusal_reason(): void
